@@ -38,12 +38,12 @@ public class ValidateFunction {
     @FunctionName("ValidateXml")
     public HttpResponseMessage run(
             @HttpTrigger(name = "req", methods = {
-                    HttpMethod.POST,
-                    HttpMethod.OPTIONS }, authLevel = AuthorizationLevel.ANONYMOUS) HttpRequestMessage<Optional<String>> request,
+                    HttpMethod.OPTIONS, HttpMethod.POST
+            }, authLevel = AuthorizationLevel.ANONYMOUS) HttpRequestMessage<Optional<String>> request,
             final ExecutionContext context) {
 
         if (request.getHttpMethod() == HttpMethod.OPTIONS) {
-            return request.createResponseBuilder(HttpStatus.OK).header("Allow", "POST, OPTIONS")
+            return request.createResponseBuilder(HttpStatus.NO_CONTENT).header("Allow", "OPTIONS, POST")
                     .header("Accept-Post", "text/xml, application/xml").build();
         }
 

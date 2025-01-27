@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "mc-api-ts"
+		},
+		{
+			"path": "mc-api-java"
+		}
+	],
+	"settings": {
+		"debug.internalConsoleOptions": "neverOpen"
+	}
+}
