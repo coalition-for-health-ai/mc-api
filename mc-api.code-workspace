@@ -5,9 +5,13 @@
 		},
 		{
 			"path": "mc-api-java"
+		},
+		{
+			"path": ".github"
 		}
 	],
 	"settings": {
-		"debug.internalConsoleOptions": "neverOpen"
+		"debug.internalConsoleOptions": "neverOpen",
+		"java.configuration.updateBuildConfiguration": "interactive"
 	}
 }
