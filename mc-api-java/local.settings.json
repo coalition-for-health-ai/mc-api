@@ -1,12 +1,13 @@
 {
-  "IsEncrypted": false,
+  "IsEncrypted": true,
   "Values": {
-    "AzureWebJobsStorage": "",
-    "AzureWebJobsStorage__accountName": "rgmcapibcfd",
-    "FUNCTIONS_WORKER_RUNTIME": "java",
-    "FUNCTIONS_EXTENSION_VERSION": "~4",
-    "APPLICATIONINSIGHTS_CONNECTION_STRING": "InstrumentationKey=79f144a4-8cd1-46a3-b3ab-598ae0f8c9f8;IngestionEndpoint=https://canadacentral-1.in.applicationinsights.azure.com/;LiveEndpoint=https://canadacentral.livediagnostics.monitor.azure.com/;ApplicationId=f711e856-34f5-42d0-a395-38447711b06b",
-    "AzureWebJobsSecretStorageType": "files"
+    "AzureWebJobsStorage": "CfDJ8ET3eUSlJThPqwxRFSQ3SLTAocp2FyiAhFUZYWNhAUfAQ/0QDqDXP/uHoImqrU48Ny4um8fzE6x/gi8dIDS7DpmBFF1feq4yc/RzaBFKKS337vIADC1mWurnxMvXguMncw==",
+    "AzureWebJobsStorage__accountName": "CfDJ8ET3eUSlJThPqwxRFSQ3SLTXhu18RqcQL1GJHC54Wfre898INS8vJPvS/1fYxeuD8A+M0HL4LrdtiVjzjr/uscpftXPc0H9QUwBoeV1oZV2PcgmK1KvI200mYizunfOCiw==",
+    "FUNCTIONS_WORKER_RUNTIME": "CfDJ8ET3eUSlJThPqwxRFSQ3SLTHyX5mIh7sYs5SpK6bqyhArsbbISVGWuvqzUxGtHe2zZCeYaoTvws/9Fwc7gZYuvW3UiGQ9+LFOfkpkFEpprLsrjFf4PzUUHvK3mWkVcp/5g==",
+    "FUNCTIONS_EXTENSION_VERSION": "CfDJ8ET3eUSlJThPqwxRFSQ3SLQc9fC4A7VWcQ/wM0EzHqO66+D5zV3iJdUcJiQCoXhEpxAaYDM81J1Y6+Waqc2qGpTbvq4AssGEEesByfUaHjTdO6qdlUYt/CnVZWjdvR62pQ==",
+    "APPLICATIONINSIGHTS_CONNECTION_STRING": "CfDJ8ET3eUSlJThPqwxRFSQ3SLS+/cGixs53WT41hMx89JdXjsGfoTzcv84NQ2qEIiDydkO+n0tseJNRTgMQuJdIP/DRaXowOrKSwuy+seLIfoTnxLyB2qGqbc7APS+N5qAavZGZjjzbT1/cb3ZIfKRUGyDQ9POM80BXu4K4oGM92zO09bS+paoyHc1BeP/wHi+5AmVEabT9FAz8DfxfYWHKIzY5jsHhh8+tp32H4/kiUjfhbJ8mjddfNVofvzfxYMlQqFdXATBUNMKeWjjQ0Zmg6srPuY4e/cKhv5Lohz8AhYQD5peUP6NW3MPFU1FoQ+qandyRAxz1nagbWXKoSgRIyVWdjY3brJerG7DMZp+5oxj1ya1GlF6gnf1ZgBdV8Q7VUIRqJRNM2ON7LLMAGcpBgja6rYE5tl3nxtEFktAnw+uJSZQjZ3YBPUnoy/PuK7dUrg==",
+    "AzureWebJobsSecretStorageType": "CfDJ8ET3eUSlJThPqwxRFSQ3SLQzmEpTgxuJWKEuySOLI3dfO5lFpEGylEnDRH+jGwnpX6y5iwkSFCBxy8A16j33V5WDkOFfNo0iQfkUeJY6F0SR8u6UKZMXr1Xyzfw3N0UgDA==",
+    "KEY_VAULT_NAME": "CfDJ8ET3eUSlJThPqwxRFSQ3SLQBkDjnjwnq1LHnrXHrf+rck75GLgFtwajTwUEO9qDZbQMQJpods36iPFVFyPJAcrbOSGZEqoXZoEF4iYVCMvXcnu52ALddyyUWqg3ZP8zeZQ=="
   },
   "ConnectionStrings": {}
 }

@@ -12,6 +12,6 @@
 	],
 	"settings": {
 		"debug.internalConsoleOptions": "neverOpen",
-		"java.configuration.updateBuildConfiguration": "interactive"
+		"java.configuration.updateBuildConfiguration": "automatic"
 	}
 }
