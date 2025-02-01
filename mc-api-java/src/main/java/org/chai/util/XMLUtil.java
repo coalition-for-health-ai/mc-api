@@ -21,7 +21,8 @@ public class XMLUtil {
             final Schema schema = factory.newSchema(new URL("https://mc.chai.org/v0.1/schema.xsd"));
 
             dbf.setNamespaceAware(true);
-            dbf.setIgnoringElementContentWhitespace(false);
+            // required because INDENT="yes" in XML serialization:
+            dbf.setIgnoringElementContentWhitespace(true);
             dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
             dbf.setSchema(schema);
             // dbf.setValidating(true); // TODO
@@ -47,13 +48,12 @@ public class XMLUtil {
         } catch (TransformerConfigurationException | TransformerFactoryConfigurationError e) {
             throw new RuntimeException(e);
         }
-        // INDENT="yes" causes XML Signature validation to fail:
-        // transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
         transformer.setOutputProperty(OutputKeys.MEDIA_TYPE, "text/xml");
         transformer.setOutputProperty(OutputKeys.METHOD, "xml");
         transformer.setOutputProperty(OutputKeys.VERSION, "1.0");
         // TODO: standalone="yes" is not applied?
-        transformer.setOutputProperty(OutputKeys.STANDALONE, "no");
+        transformer.setOutputProperty(OutputKeys.STANDALONE, "yes");
         return transformer;
     }
 }
