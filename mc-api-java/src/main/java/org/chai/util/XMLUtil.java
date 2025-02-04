@@ -13,6 +13,9 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
 public class XMLUtil {
     public static DocumentBuilderFactory newDocumentBuilderFactory() {
         try {
@@ -55,5 +58,18 @@ public class XMLUtil {
         // TODO: standalone="yes" is not applied?
         transformer.setOutputProperty(OutputKeys.STANDALONE, "yes");
         return transformer;
+    }
+
+    public static Element getElement(final Element parent, final String name) {
+        return (Element) parent.getElementsByTagName(name).item(0);
+    }
+
+    public static String getElementText(final Element parent, final String name) {
+        return getElement(parent, name).getTextContent();
+    }
+
+    public static String getElementTextWithDefault(final Element parent, final String name, final String defaultValue) {
+        final Node node = getElement(parent, name);
+        return node == null ? defaultValue : node.getTextContent();
     }
 }
