@@ -1,11 +1,14 @@
 package org.chai;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
 import java.util.*;
 import java.util.logging.Level;
 
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
 import org.chai.mc.Renderer;
 import org.chai.mc.RendererFactory;
 import org.chai.util.IOUtil;
@@ -115,10 +118,21 @@ public class XmlToPdfFunction {
                         });
         if (validateResponseBody.containsKey("result") &&
                 validateResponseBody.get("result").equals("VALID")) {
-            final Document doc;
             try {
-                doc = XMLUtil.newDocumentBuilder()
+                final Document doc = XMLUtil.newDocumentBuilder()
                         .parse(new InputSource(new StringReader(xml)));
+                final Renderer renderer = RendererFactory.getRenderer("v0.1", MARKDOWN_PARSER, HTML_RENDERER);
+                final String html = renderer.render(doc.getDocumentElement());
+                final PDDocument pdf = compileHTMLtoPDF(html);
+                final Map<String, String> customProperties = new HashMap<>();
+                customProperties.put("chaiMcXml", xml);
+                customProperties.put("chaiMcSoftwareId", "mc-api 1.0.0");
+                final PDDocument pdfWithProperties = addCustomPropertiesToPDF(pdf, customProperties);
+                final byte[] pdfByteArray = convertPdfToByteArray(pdfWithProperties);
+                pdfWithProperties.close();
+                return request.createResponseBuilder(HttpStatus.OK).header("Content-Type", "application/pdf")
+                        .body(pdfByteArray)
+                        .build();
             } catch (SAXException | IOException e) {
                 final Map<String, String> result = new HashMap<String, String>();
                 result.put("result", "ERROR");
@@ -128,19 +142,6 @@ public class XmlToPdfFunction {
                         .body(IOUtil.jsonSerializeToString(jsonSerializer, result))
                         .header("Content-Type", "application/json").build();
             }
-
-            final Renderer renderer = RendererFactory.getRenderer("v0.1", MARKDOWN_PARSER, HTML_RENDERER);
-
-            final String html = renderer.render(doc.getDocumentElement());
-            final byte[] pdf = compileHTMLtoPDF(html);
-            final Map<String, String> customProperties = new HashMap<>();
-            customProperties.put("chaiMcXml", xml);
-            customProperties.put("chaiMcSoftwareId", "mc-api 1.0.0");
-            final byte[] pdfWithProperties = addCustomPropertiesToPDF(pdf, customProperties);
-            // TODO: digitally sign PDF
-            return request.createResponseBuilder(HttpStatus.OK).header("Content-Type", "application/pdf")
-                    .body(pdfWithProperties)
-                    .build();
         } else {
             final HttpResponseMessage.Builder responseBuilder = request
                     .createResponseBuilder(HttpStatus.valueOf(validateResponse.getStatusCode()))
@@ -152,7 +153,7 @@ public class XmlToPdfFunction {
         }
     }
 
-    private static byte[] compileHTMLtoPDF(final String html) {
+    private static PDDocument compileHTMLtoPDF(final String html) throws IOException {
         try (final Playwright playwright = Playwright.create()) {
             final Browser browser = playwright.chromium().launch();
             final Page page = browser.newPage();
@@ -161,11 +162,23 @@ public class XmlToPdfFunction {
                     .setMargin(new Margin().setTop("0.5in").setRight("0.5in").setBottom("0.5in").setLeft("0.5in"))
                     .setFormat("Letter"));
             browser.close();
-            return pdf;
+            return Loader.loadPDF(pdf);
         }
     }
 
-    private byte[] addCustomPropertiesToPDF(final byte[] pdf, final Map<String, String> properties) {
+    private PDDocument addCustomPropertiesToPDF(final PDDocument pdf, final Map<String, String> properties) {
+        for (Map.Entry<String, String> property : properties.entrySet()) {
+            pdf.getDocumentInformation().setCustomMetadataValue(property.getKey(), property.getValue());
+        }
         return pdf;
+    }
+
+    private byte[] convertPdfToByteArray(final PDDocument document) throws IOException {
+        byte[] byteArray = null;
+        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
+            document.save(byteArrayOutputStream);
+            byteArray = byteArrayOutputStream.toByteArray();
+        }
+        return byteArray;
     }
 }
