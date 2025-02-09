@@ -76,9 +76,21 @@
         </dependency>
 
         <dependency>
-            <groupId>org.commonmark</groupId>
-            <artifactId>commonmark-ext-footnotes</artifactId>
-            <version>0.24.0</version>
+            <groupId>de.undercouch</groupId>
+            <artifactId>citeproc-java</artifactId>
+            <version>3.2.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.citationstyles</groupId>
+            <artifactId>styles</artifactId>
+            <version>24.12</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.citationstyles</groupId>
+            <artifactId>locales</artifactId>
+            <version>24.12</version>
         </dependency>
 
         <dependency>

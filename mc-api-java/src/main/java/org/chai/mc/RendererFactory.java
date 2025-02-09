@@ -1,10 +1,9 @@
 package org.chai.mc;
 
 public class RendererFactory {
-    public static Renderer getRenderer(final String version, final org.commonmark.parser.Parser markdownParser,
-            final org.commonmark.renderer.Renderer htmlRenderer) {
+    public static Renderer getRenderer(final String version) {
         if ("v0.1".equals(version)) {
-            return new RendererV01(markdownParser, htmlRenderer);
+            return new RendererV01();
         } else {
             throw new IllegalArgumentException("Unknown version: " + version);
         }

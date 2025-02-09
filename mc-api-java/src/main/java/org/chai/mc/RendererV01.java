@@ -1,23 +1,17 @@
 package org.chai.mc;
 
-import java.io.PrintWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.chai.util.BibTeXUtil;
+import org.chai.util.CommonMarkUtil;
 import org.chai.util.XMLUtil;
+import org.jbibtex.ParseException;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-public class RendererV01 implements Renderer {
-
-    private final org.commonmark.parser.Parser MARKDOWN_PARSER;
-    private final org.commonmark.renderer.Renderer HTML_RENDERER;
-
-    public RendererV01(final org.commonmark.parser.Parser markdownParser,
-            final org.commonmark.renderer.Renderer htmlRenderer) {
-        MARKDOWN_PARSER = markdownParser;
-        HTML_RENDERER = htmlRenderer;
-    }
+public class RendererV01 implements org.chai.mc.Renderer {
 
     public String renderBasicInfo(final Element basicInfo) {
         final String modelName = XMLUtil.getElementText(basicInfo, "ModelName");
@@ -26,17 +20,18 @@ public class RendererV01 implements Renderer {
         return String.format(
                 """
                         <tr>
-                            <td colspan="3">
+                            <td>
                                 <div><b>Name:</b> %s</div>
                                 <div><b>Developer:</b> %s</div>
                             </td>
-                            <td colspan="3">
+                            <td>
                                 <div><b>Inquires or to report an issue:</b> %s</div>
                             </td>
                         </tr>
-                        """, HTML_RENDERER.render(MARKDOWN_PARSER.parse(modelName)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(modelDeveloper)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(developerContact)));
+                        """,
+                CommonMarkUtil.markdownToHtml(modelName),
+                CommonMarkUtil.markdownToHtml(modelDeveloper),
+                CommonMarkUtil.markdownToHtml(developerContact));
     }
 
     public String renderReleaseInfo(final Element releaseInfo) {
@@ -48,7 +43,7 @@ public class RendererV01 implements Renderer {
         return String.format(
                 """
                             <tr>
-                                <td colspan="6">
+                                <td colspan="2">
                                     <div style="justify-content: space-between; display: flex; flex-wrap: wrap;">
                                         <span><b>Release Stage:</b> %s</span>
                                         <span><b>Release Date:</b> %s</span>
@@ -59,11 +54,11 @@ public class RendererV01 implements Renderer {
                                 </td>
                             </tr>
                         """,
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(releaseStage)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(releaseDate)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(releaseVersion)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(globalAvailability)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(regulatoryApproval)));
+                CommonMarkUtil.markdownToHtml(releaseStage),
+                CommonMarkUtil.markdownToHtml(releaseDate),
+                CommonMarkUtil.markdownToHtml(releaseVersion),
+                CommonMarkUtil.markdownToHtml(globalAvailability),
+                CommonMarkUtil.markdownToHtml(regulatoryApproval));
     }
 
     public String renderModelSummary(final Element modelSummary) {
@@ -75,16 +70,16 @@ public class RendererV01 implements Renderer {
         }
         return String.format(
                 """
-                        <td colspan="3">
+                        <td>
                             <div style="display: flex; flex-direction: column; justify-content: space-between; height: 100%%;">
                                 <p style="margin-top: 0"><b>Summary:</b> %s</p>
                                 <p style="margin-bottom: 0"><b>Keywords:</b> %s</p>
                             </div>
                         </td>
                         """,
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(summary)),
-                keywords.stream().map(keyword -> HTML_RENDERER.render(MARKDOWN_PARSER.parse(keyword)))
-                        .reduce((a, b) -> a + "; " + b).orElse("None"));
+                CommonMarkUtil.markdownToHtml(summary),
+                keywords.stream().map(keyword -> CommonMarkUtil.markdownToHtml(keyword)).reduce((a, b) -> a + "; " + b)
+                        .orElse("None"));
     }
 
     public String renderUsesAndDirections(final Element usesAndDirections) {
@@ -95,7 +90,7 @@ public class RendererV01 implements Renderer {
         final String cautionedOutOfScopeSettings = XMLUtil.getElementText(usesAndDirections,
                 "CautionedOutOfScopeSettings");
         return String.format("""
-                <td colspan="3" style="vertical-align: top">
+                <td style="vertical-align: top">
                     <b>Uses and Directions:</b>
                     <ul style="margin-top: 2px">
                         <li><b>Intended use and workflow:</b> %s</li>
@@ -105,11 +100,11 @@ public class RendererV01 implements Renderer {
                         <li><b>Cautioned out-of-scope settings and use cases:</b> %s</li>
                     </ul>
                 </td>
-                """, HTML_RENDERER.render(MARKDOWN_PARSER.parse(intendedUseAndWorkflow)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(primaryIntendedUsers)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(howToUse)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(targetedPatientPopulation)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(cautionedOutOfScopeSettings)));
+                """, CommonMarkUtil.markdownToHtml(intendedUseAndWorkflow),
+                CommonMarkUtil.markdownToHtml(primaryIntendedUsers),
+                CommonMarkUtil.markdownToHtml(howToUse),
+                CommonMarkUtil.markdownToHtml(targetedPatientPopulation),
+                CommonMarkUtil.markdownToHtml(cautionedOutOfScopeSettings));
     }
 
     public String renderWarnings(final Element warnings) {
@@ -119,12 +114,12 @@ public class RendererV01 implements Renderer {
         final String clinicalRiskLevel = XMLUtil.getElementText(warnings, "ClinicalRiskLevel");
         return String.format("""
                 <tr style="background-color: black; color: white">
-                    <td colspan="6">
+                    <td colspan="2">
                         <b>Warnings</b>
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="6">
+                    <td colspan="2">
                         <ul style="margin-top: 4px; margin-bottom: 4px">
                             <li><b>Known risks and limitations:</b> %s</li>
                             <li><b>Known biases or ethical considerations:</b> %s</li>
@@ -132,9 +127,10 @@ public class RendererV01 implements Renderer {
                         </ul>
                     </td>
                 </tr>
-                """, HTML_RENDERER.render(MARKDOWN_PARSER.parse(knownRisksAndLimitations)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(knownBiasesOrEthicalConsiderations)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(clinicalRiskLevel)));
+                """,
+                CommonMarkUtil.markdownToHtml(knownRisksAndLimitations),
+                CommonMarkUtil.markdownToHtml(knownBiasesOrEthicalConsiderations),
+                CommonMarkUtil.markdownToHtml(clinicalRiskLevel));
     }
 
     public String renderTrustIngredients(final Element trustIngredients) {
@@ -157,12 +153,12 @@ public class RendererV01 implements Renderer {
         return String.format(
                 """
                         <tr style="background-color: black; color: white">
-                            <td colspan="6">
+                            <td colspan="2">
                                 <b>Trust Ingredients</b>
                             </td>
                         </tr>
                         <tr>
-                            <td colspan="6">
+                            <td colspan="2">
                                 <b>AI System Facts:</b>
                                 <ul style="margin-top: 4px; margin-bottom: 4px">
                                     <li><b>Outcome(s) and output(s):</b> %s</li>
@@ -185,19 +181,19 @@ public class RendererV01 implements Renderer {
                             </td>
                         </tr>
                         """,
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(outcomesAndOutputs)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(modelType)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(foundationModels)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(inputDataSource)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(outputAndInputDataTypes)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(developmentDataCharacterization)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(biasMitigationApproaches)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(ongoingMaintenance)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(security)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(transparency)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(fundingSource)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(thirdPartyInformation)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(stakeholdersConsulted)));
+                CommonMarkUtil.markdownToHtml(outcomesAndOutputs),
+                CommonMarkUtil.markdownToHtml(modelType),
+                CommonMarkUtil.markdownToHtml(foundationModels),
+                CommonMarkUtil.markdownToHtml(inputDataSource),
+                CommonMarkUtil.markdownToHtml(outputAndInputDataTypes),
+                CommonMarkUtil.markdownToHtml(developmentDataCharacterization),
+                CommonMarkUtil.markdownToHtml(biasMitigationApproaches),
+                CommonMarkUtil.markdownToHtml(ongoingMaintenance),
+                CommonMarkUtil.markdownToHtml(security),
+                CommonMarkUtil.markdownToHtml(transparency),
+                CommonMarkUtil.markdownToHtml(fundingSource),
+                CommonMarkUtil.markdownToHtml(thirdPartyInformation),
+                CommonMarkUtil.markdownToHtml(stakeholdersConsulted));
     }
 
     public String renderKeyMetrics(final Element keyMetrics) {
@@ -239,13 +235,13 @@ public class RendererV01 implements Renderer {
                 "ValidationProcessAndJustification");
         return String.format("""
                 <tr style="background-color: black; color: white">
-                    <td colspan="6">
+                    <td colspan="2">
                         <b>Key Metrics</b>
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="6">
-                        <table>
+                    <td colspan="2">
+                        <table style="font-size: 14px">
                             <colgroup>
                                 <col style="background-color: #dce9f5" span="2">
                                 <col style="background-color: #f5e3d7" span="2">
@@ -290,24 +286,24 @@ public class RendererV01 implements Renderer {
                     </td>
                 </tr>
                 """,
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(metricGoalUsefulnessUsabilityEfficacy)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(metricGoalFairnessEquity)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(metricGoalSafetyReliability)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(resultUsefulnessUsabilityEfficacy)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(interpretationUsefulnessUsabilityEfficacy)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(resultFairnessEquity)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(interpretationFairnessEquity)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(resultSafetyReliability)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(interpretationSafetyReliability)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(testTypeUsefulnessUsabilityEfficacy)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(testTypeFairnessEquity)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(testTypeSafetyReliability)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(tesstingDataDescriptionUsefulnessUsabilityEfficacy)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(tesstingDataDescriptionFairnessEquity)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(tesstingDataDescriptionSafetyReliability)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(validationProcessUsefulnessUsabilityEfficacy)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(validationProcessFairnessEquity)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(validationProcessSafetyReliability)));
+                CommonMarkUtil.markdownToHtml(metricGoalUsefulnessUsabilityEfficacy),
+                CommonMarkUtil.markdownToHtml(metricGoalFairnessEquity),
+                CommonMarkUtil.markdownToHtml(metricGoalSafetyReliability),
+                CommonMarkUtil.markdownToHtml(resultUsefulnessUsabilityEfficacy),
+                CommonMarkUtil.markdownToHtml(interpretationUsefulnessUsabilityEfficacy),
+                CommonMarkUtil.markdownToHtml(resultFairnessEquity),
+                CommonMarkUtil.markdownToHtml(interpretationFairnessEquity),
+                CommonMarkUtil.markdownToHtml(resultSafetyReliability),
+                CommonMarkUtil.markdownToHtml(interpretationSafetyReliability),
+                CommonMarkUtil.markdownToHtml(testTypeUsefulnessUsabilityEfficacy),
+                CommonMarkUtil.markdownToHtml(testTypeFairnessEquity),
+                CommonMarkUtil.markdownToHtml(testTypeSafetyReliability),
+                CommonMarkUtil.markdownToHtml(tesstingDataDescriptionUsefulnessUsabilityEfficacy),
+                CommonMarkUtil.markdownToHtml(tesstingDataDescriptionFairnessEquity),
+                CommonMarkUtil.markdownToHtml(tesstingDataDescriptionSafetyReliability),
+                CommonMarkUtil.markdownToHtml(validationProcessUsefulnessUsabilityEfficacy),
+                CommonMarkUtil.markdownToHtml(validationProcessFairnessEquity),
+                CommonMarkUtil.markdownToHtml(validationProcessSafetyReliability));
     }
 
     public String renderResources(final Element resources) {
@@ -319,12 +315,12 @@ public class RendererV01 implements Renderer {
         final String stakeholdersConsulted = XMLUtil.getElementText(resources, "StakeholdersConsulted");
         return String.format("""
                 <tr style="background-color: black; color: white">
-                    <td colspan="6">
+                    <td colspan="2">
                         <b>Resources</b>
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="6">
+                    <td colspan="2">
                         <ul style="margin-top: 4px; margin-bottom: 4px">
                             <li><b>Evalation References:</b> %s</li>
                             <li><b>Clinical Trial:</b> %s</li>
@@ -335,94 +331,106 @@ public class RendererV01 implements Renderer {
                         </ul>
                     </td>
                 </tr>
-                """, HTML_RENDERER.render(MARKDOWN_PARSER.parse(evaluationReferences)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(clinicalTrial)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(peerReviewedPublications)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(reimbursementStatus)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(patientConsentOrDisclosure)),
-                HTML_RENDERER.render(MARKDOWN_PARSER.parse(stakeholdersConsulted)));
+                """, CommonMarkUtil.markdownToHtml(evaluationReferences),
+                CommonMarkUtil.markdownToHtml(clinicalTrial),
+                CommonMarkUtil.markdownToHtml(peerReviewedPublications),
+                CommonMarkUtil.markdownToHtml(reimbursementStatus),
+                CommonMarkUtil.markdownToHtml(patientConsentOrDisclosure),
+                CommonMarkUtil.markdownToHtml(stakeholdersConsulted));
+    }
+
+    public String renderReferences(final Element references) throws ParseException, IOException {
+        return BibTeXUtil.bibtexToHtml(references.getTextContent());
     }
 
     @Override
     public String render(final Element appliedModelCard) {
-        final String whaoh = String.format(
-                """
-                        <!DOCTYPE html>
-                        <html dir="ltr" lang="en">
-                            <head>
-                                <meta charset="UTF-8">
-                                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/modern-normalize@3.0.1/modern-normalize.min.css">
-                                <style>
-                                    :root {
-                                        print-color-adjust: exact;
-                                        -webkit-print-color-adjust: exact;
-                                        font-optical-sizing: auto;
-                                        font-style: normal;
-                                        word-wrap: break-word;
-                                    }
-                                    table {
-                                        width: 100%%;
-                                        height: 1px; /* magic number for height inheritance (ModelSummary) */
-                                        border: 2px solid black;
-                                        border-collapse: collapse;
-                                        text-align: left;
-                                        table-layout: fixed;
-                                    }
-                                    tr, th, td {
-                                        border: 2px solid black;
-                                        padding: 4px;
-                                    }
-                                </style>
-                            </head>
-                            <body>
-                                <p>Applied Model Card v0.1</p>
-                                <h1 style="text-align: center; margin-top: 0">CHAI Applied Model Card</h1>
-                                <table>
-                                    <tbody>
-                                        %s
-                                        %s
-                                        <tr>
+        try {
+            return String.format(
+                    """
+                            <!DOCTYPE html>
+                            <html dir="ltr" lang="en">
+                                <head>
+                                    <meta charset="UTF-8">
+                                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/modern-normalize@3.0.1/modern-normalize.min.css">
+                                    <style>
+                                        :root {
+                                            print-color-adjust: exact;
+                                            -webkit-print-color-adjust: exact;
+                                            font-optical-sizing: auto;
+                                            font-style: normal;
+                                            word-wrap: break-word;
+                                        }
+
+                                        table {
+                                            width: 100%%;
+                                            height: 1px; /* magic number for height inheritance (ModelSummary) */
+                                            border: 2px solid black;
+                                            border-collapse: collapse;
+                                            text-align: left;
+                                            table-layout: fixed;
+                                        }
+                                        tr, th, td {
+                                            border: 2px solid black;
+                                            padding: 4px;
+                                        }
+
+                                        .csl-entry {
+                                            padding-bottom: 1em;
+                                            text-indent: -0.5in;
+                                            padding-left: 0.5in;
+                                        }
+                                    </style>
+                                    <title>CHAI Applied Model Card</title>
+                                </head>
+                                <body>
+                                    <p>Applied Model Card v0.1</p>
+                                    <h1 style="text-align: center; margin-top: 0">CHAI Applied Model Card</h1>
+                                    <table>
+                                        <tbody>
                                             %s
                                             %s
-                                        </tr>
-                                        %s
-                                        %s
-                                        %s
-                                        %s
-                                    </tbody>
-                                </table>
+                                            <tr>
+                                                %s
+                                                %s
+                                            </tr>
+                                            %s
+                                            %s
+                                            %s
+                                            %s
+                                        </tbody>
+                                    </table>
 
-                                <h2>References</h2>
+                                    <h2>References</h2>
+                                    %s
 
-                                <!-- TODO references -->
+                                    <hr>
 
-                                <p>Note: The mention or sharing of any examples, products, organizations, or individuals does not indicate any endorsement of those examples, products, organizations, or individuals by the Coalition for Health AI (CHAI). Any examples provided here are still under review for alignment with existing standards and instructions. We welcome feedback and stress-testing of the tool in draft form. </p>
+                                    <p>Note: The mention or sharing of any examples, products, organizations, or individuals does not indicate any endorsement of those examples, products, organizations, or individuals by the Coalition for Health AI (CHAI). Any examples provided here are still under review for alignment with existing standards and instructions. We welcome feedback and stress-testing of the tool in draft form. </p>
 
-                                <p>The information provided in this document is for general informational purposes only and does not constitute legal advice. It is not intended to create, and receipt or review of it does not establish, an attorney-client relationship. </p>
+                                    <p>The information provided in this document is for general informational purposes only and does not constitute legal advice. It is not intended to create, and receipt or review of it does not establish, an attorney-client relationship. </p>
 
-                                <p>This document should not be relied upon as a substitute for consulting with qualified legal or compliance professionals. Organizations and individuals are encouraged to seek advice specific to their unique circumstances to ensure adherence to applicable laws, regulations, and standards. </p>
+                                    <p>This document should not be relied upon as a substitute for consulting with qualified legal or compliance professionals. Organizations and individuals are encouraged to seek advice specific to their unique circumstances to ensure adherence to applicable laws, regulations, and standards. </p>
 
-                                <p>For instructions, references, contributors, and disclaimers please refer to the full documentation located at <a href="https://www.chai.org/">www.chai.org</a>. </p>
+                                    <p>For instructions, references, contributors, and disclaimers please refer to the full documentation located at <a href="https://www.chai.org/">www.chai.org</a>. </p>
 
-                                <p>Copyright (c) 2024 Coalition for Health AI, Inc. </p>
-                            </body>
-                        </html>
-                        """,
-                renderBasicInfo(XMLUtil.getElement(appliedModelCard, "BasicInfo")),
-                renderReleaseInfo(XMLUtil.getElement(appliedModelCard, "ReleaseInfo")),
-                renderModelSummary(XMLUtil.getElement(appliedModelCard, "ModelSummary")),
-                renderUsesAndDirections(XMLUtil.getElement(appliedModelCard, "UsesAndDirections")),
-                renderWarnings(XMLUtil.getElement(appliedModelCard, "Warnings")),
-                renderTrustIngredients(XMLUtil.getElement(appliedModelCard, "TrustIngredients")),
-                renderKeyMetrics(XMLUtil.getElement(appliedModelCard, "KeyMetrics")),
-                renderResources(XMLUtil.getElement(appliedModelCard, "Resources")));
-        try (PrintWriter out = new PrintWriter("/tmp/mc.html")) {
-            out.println(whaoh);
-        } catch (Exception e) {
-            e.printStackTrace();
+                                    <p>Copyright (c) 2024 Coalition for Health AI, Inc. </p>
+                                </body>
+                            </html>
+                            """,
+                    renderBasicInfo(XMLUtil.getElement(appliedModelCard, "BasicInfo")),
+                    renderReleaseInfo(XMLUtil.getElement(appliedModelCard, "ReleaseInfo")),
+                    renderModelSummary(XMLUtil.getElement(appliedModelCard, "ModelSummary")),
+                    renderUsesAndDirections(XMLUtil.getElement(appliedModelCard, "UsesAndDirections")),
+                    renderWarnings(XMLUtil.getElement(appliedModelCard, "Warnings")),
+                    renderTrustIngredients(XMLUtil.getElement(appliedModelCard, "TrustIngredients")),
+                    renderKeyMetrics(XMLUtil.getElement(appliedModelCard, "KeyMetrics")),
+                    renderResources(XMLUtil.getElement(appliedModelCard, "Resources")),
+                    renderReferences(XMLUtil.getElement(appliedModelCard, "References")));
+        } catch (ParseException | IOException e) {
+            throw new RuntimeException(e);
         }
-        return whaoh;
     }
 
 }

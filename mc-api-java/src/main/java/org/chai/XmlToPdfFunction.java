@@ -13,14 +13,6 @@ import org.chai.mc.Renderer;
 import org.chai.mc.RendererFactory;
 import org.chai.util.IOUtil;
 import org.chai.util.XMLUtil;
-import org.commonmark.Extension;
-import org.commonmark.ext.autolink.AutolinkExtension;
-import org.commonmark.ext.footnotes.FootnotesExtension;
-import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension;
-import org.commonmark.node.Node;
-import org.commonmark.parser.Parser;
-import org.commonmark.renderer.html.AttributeProvider;
-import org.commonmark.renderer.html.HtmlRenderer;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -30,6 +22,7 @@ import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
 import com.microsoft.playwright.options.Margin;
+
 import com.azure.core.http.HttpClient;
 import com.azure.core.http.HttpHeaderName;
 import com.azure.core.http.HttpHeaders;
@@ -41,18 +34,6 @@ import com.azure.core.util.serializer.JsonSerializer;
 import com.azure.core.util.serializer.JsonSerializerProviders;
 import com.azure.core.util.serializer.TypeReference;
 import com.microsoft.azure.functions.*;
-
-class FirstTagInlineAttributeProvider implements AttributeProvider {
-    private boolean isFirstTag = true;
-
-    @Override
-    public void setAttributes(final Node node, final String tagName, final Map<String, String> attributes) {
-        if (isFirstTag) {
-            attributes.put("style", "display: inline");
-            isFirstTag = false;
-        }
-    }
-}
 
 public class XmlToPdfFunction {
 
@@ -66,13 +47,6 @@ public class XmlToPdfFunction {
     }
     private static final HttpHeaders VALIDATE_REQUEST_HEADERS = new HttpHeaders().add(HttpHeaderName.CONTENT_TYPE,
             "text/xml");
-
-    private static final List<Extension> COMMONMARK_EXTENSIONS = Arrays.asList(AutolinkExtension.create(),
-            StrikethroughExtension.create(), FootnotesExtension.create());
-    private static final Parser MARKDOWN_PARSER = Parser.builder().extensions(COMMONMARK_EXTENSIONS).build();
-    private static final HtmlRenderer HTML_RENDERER = HtmlRenderer.builder().extensions(COMMONMARK_EXTENSIONS)
-            .omitSingleParagraphP(true).attributeProviderFactory(context -> new FirstTagInlineAttributeProvider())
-            .build();
 
     @FunctionName("XmlToPdf")
     public HttpResponseMessage run(
@@ -121,7 +95,7 @@ public class XmlToPdfFunction {
             try {
                 final Document doc = XMLUtil.newDocumentBuilder()
                         .parse(new InputSource(new StringReader(xml)));
-                final Renderer renderer = RendererFactory.getRenderer("v0.1", MARKDOWN_PARSER, HTML_RENDERER);
+                final Renderer renderer = RendererFactory.getRenderer("v0.1");
                 final String html = renderer.render(doc.getDocumentElement());
                 final PDDocument pdf = compileHTMLtoPDF(html);
                 final Map<String, String> customProperties = new HashMap<>();
@@ -130,6 +104,7 @@ public class XmlToPdfFunction {
                 final PDDocument pdfWithProperties = addCustomPropertiesToPDF(pdf, customProperties);
                 final byte[] pdfByteArray = convertPdfToByteArray(pdfWithProperties);
                 pdfWithProperties.close();
+                context.getLogger().log(Level.INFO, "RETURN " + html);
                 return request.createResponseBuilder(HttpStatus.OK).header("Content-Type", "application/pdf")
                         .body(pdfByteArray)
                         .build();
