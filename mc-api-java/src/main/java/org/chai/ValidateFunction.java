@@ -35,9 +35,11 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
+import org.chai.util.BibTeXUtil;
 import org.chai.util.IOUtil;
 import org.chai.util.KeyUtil;
 import org.chai.util.XMLUtil;
+import org.jbibtex.ParseException;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
@@ -97,7 +99,7 @@ public class ValidateFunction {
         } catch (SAXException | IOException e) {
             final Map<String, String> result = new HashMap<String, String>();
             result.put("result", "INVALID");
-            result.put("reason", e.getMessage());
+            result.put("reason", "XML Schema Validation failed: " + e.getMessage());
             context.getLogger().log(Level.INFO, "RETURN " + result);
             return request.createResponseBuilder(HttpStatus.OK)
                     .body(IOUtil.jsonSerializeToString(jsonSerializer, result))
@@ -113,6 +115,19 @@ public class ValidateFunction {
         }
         try {
             final Document doc = XMLUtil.newDocumentBuilder().parse(new InputSource(chaiMcXmlReader));
+
+            try {
+                BibTeXUtil.throwIfInvalidBibTeX(XMLUtil.getElementText(doc.getDocumentElement(), "Bibliography"));
+            } catch (ParseException e) {
+                final Map<String, String> result = new HashMap<String, String>();
+                result.put("result", "INVALID");
+                result.put("reason", "Bibliography element BibTeX validation failed: " + e.getMessage());
+                context.getLogger().log(Level.INFO, "RETURN " + result);
+                return request.createResponseBuilder(HttpStatus.OK)
+                        .body(IOUtil.jsonSerializeToString(jsonSerializer, result))
+                        .header("Content-Type", "application/json").build();
+            }
+
             final NodeList nl = doc.getElementsByTagNameNS(XMLSignature.XMLNS, "Signature");
             if (nl.getLength() > 0) {
                 // TODO: X.509 certificate + KeySelector?
@@ -147,19 +162,7 @@ public class ValidateFunction {
                     return request.createResponseBuilder(HttpStatus.OK)
                             .body(IOUtil.jsonSerializeToString(jsonSerializer, result))
                             .header("Content-Type", "application/json").build();
-                } else {
-                    final Map<String, Object> result = Collections.singletonMap("result", "VALID");
-                    context.getLogger().log(Level.INFO, "RETURN " + result);
-                    return request.createResponseBuilder(HttpStatus.OK)
-                            .body(IOUtil.jsonSerializeToString(jsonSerializer, result))
-                            .header("Content-Type", "application/json").build();
                 }
-            } else {
-                final Map<String, Object> result = Collections.singletonMap("result", "VALID");
-                context.getLogger().log(Level.INFO, "RETURN " + result);
-                return request.createResponseBuilder(HttpStatus.OK)
-                        .body(IOUtil.jsonSerializeToString(jsonSerializer, result))
-                        .header("Content-Type", "application/json").build();
             }
         } catch (SAXException | IOException | MarshalException | XMLSignatureException e) {
             final Map<String, String> result = new HashMap<String, String>();
@@ -171,5 +174,10 @@ public class ValidateFunction {
                     .header("Content-Type", "application/json").build();
         }
 
+        final Map<String, Object> result = Collections.singletonMap("result", "VALID");
+        context.getLogger().log(Level.INFO, "RETURN " + result);
+        return request.createResponseBuilder(HttpStatus.OK)
+                .body(IOUtil.jsonSerializeToString(jsonSerializer, result))
+                .header("Content-Type", "application/json").build();
     }
 }
