@@ -339,8 +339,8 @@ public class RendererV01 implements org.chai.mc.Renderer {
                 CommonMarkUtil.markdownToHtml(stakeholdersConsulted));
     }
 
-    public String renderReferences(final Element references) throws ParseException, IOException {
-        return BibTeXUtil.bibtexToHtml(references.getTextContent());
+    public String renderReferences(final Element bibliography) throws ParseException, IOException {
+        return BibTeXUtil.bibtexToHtml(bibliography.getTextContent());
     }
 
     @Override
@@ -427,7 +427,7 @@ public class RendererV01 implements org.chai.mc.Renderer {
                     renderTrustIngredients(XMLUtil.getElement(appliedModelCard, "TrustIngredients")),
                     renderKeyMetrics(XMLUtil.getElement(appliedModelCard, "KeyMetrics")),
                     renderResources(XMLUtil.getElement(appliedModelCard, "Resources")),
-                    renderReferences(XMLUtil.getElement(appliedModelCard, "References")));
+                    renderReferences(XMLUtil.getElement(appliedModelCard, "Bibliography")));
         } catch (ParseException | IOException e) {
             throw new RuntimeException(e);
         }

@@ -126,7 +126,7 @@ public class ValidateFunctionTest {
 
         // Verify
         assertEquals(HttpStatus.OK, ret.getStatus());
-        assertEquals("{\"result\":\"INVALID\",\"reason\":\"Content is not allowed in prolog.\"}", ret.getBody());
+        assertEquals("{\"result\":\"INVALID\",\"reason\":\"XML Schema Validation failed: Content is not allowed in prolog.\"}", ret.getBody());
     }
 
     @Test
@@ -274,7 +274,7 @@ public class ValidateFunctionTest {
         // Verify
         assertEquals(HttpStatus.OK, ret.getStatus());
         assertEquals(
-                "{\"result\":\"INVALID\",\"reason\":\"cvc-elt.1.a: Cannot find the declaration of element 'catalog'.\"}",
+                "{\"result\":\"INVALID\",\"reason\":\"XML Schema Validation failed: cvc-elt.1.a: Cannot find the declaration of element 'catalog'.\"}",
                 ret.getBody());
     }
 
