@@ -3,7 +3,6 @@ package org.chai;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.net.URL;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyException;
 import java.security.NoSuchAlgorithmException;
@@ -33,6 +32,8 @@ import javax.xml.crypto.dsig.spec.TransformParameterSpec;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+
+import org.chai.util.APIUtil;
 import org.chai.util.IOUtil;
 import org.chai.util.KeyUtil;
 import org.chai.util.XMLUtil;
@@ -41,13 +42,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import com.azure.core.http.HttpClient;
-import com.azure.core.http.HttpHeaderName;
-import com.azure.core.http.HttpHeaders;
-import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
-import com.azure.core.util.BinaryData;
-import com.azure.core.util.Context;
 import com.azure.core.util.serializer.TypeReference;
 import com.microsoft.azure.functions.ExecutionContext;
 import com.microsoft.azure.functions.HttpMethod;
@@ -59,17 +54,6 @@ import com.microsoft.azure.functions.annotation.FunctionName;
 import com.microsoft.azure.functions.annotation.HttpTrigger;
 
 public class StampFunction {
-
-    private static URL VALIDATE_ENDPOINT;
-    static {
-        try {
-            VALIDATE_ENDPOINT = new URL("https://func-mc-api-java.azurewebsites.net/api/ValidateXml");
-        } catch (java.net.MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-    private static final HttpHeaders VALIDATE_REQUEST_HEADERS = new HttpHeaders().add(HttpHeaderName.CONTENT_TYPE,
-            "text/xml");
 
     private static final PublicKey PUBLIC_KEY = KeyUtil.getPublicKey();
     private static final PrivateKey PRIVATE_KEY = KeyUtil.getPrivateKey();
@@ -102,13 +86,8 @@ public class StampFunction {
 
         context.getLogger().log(Level.INFO, "ENTRY " + request.getBody().orElse("null"));
 
-        // TODO: Durable Functions with function chaining?
-        final HttpRequest validateRequest = new HttpRequest(com.azure.core.http.HttpMethod.POST,
-                VALIDATE_ENDPOINT,
-                VALIDATE_REQUEST_HEADERS,
-                BinaryData.fromString(request.getBody().orElse("")));
-        final HttpResponse validateResponse = HttpClient.createDefault().sendSync(validateRequest,
-                Context.NONE);
+        final String xml = request.getBody().orElse("");
+        final HttpResponse validateResponse = APIUtil.sendValidateRequest(xml);
         final Map<String, String> validateResponseBody = IOUtil.JSON_SERIALIZER
                 .deserializeFromBytes(validateResponse.getBodyAsByteArray().block(),
                         new TypeReference<Map<String, String>>() {
@@ -117,7 +96,7 @@ public class StampFunction {
             final Document doc;
             try {
                 doc = XMLUtil.newDocumentBuilder()
-                        .parse(new InputSource(new StringReader(request.getBody().orElse(""))));
+                        .parse(new InputSource(new StringReader(xml)));
             } catch (SAXException | IOException e) {
                 final Map<String, String> result = new HashMap<String, String>();
                 result.put("result", "ERROR");

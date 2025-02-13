@@ -3,7 +3,6 @@ package org.chai;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
-import java.net.URL;
 import java.util.*;
 import java.util.logging.Level;
 
@@ -11,6 +10,7 @@ import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.chai.mc.Renderer;
 import org.chai.mc.RendererFactory;
+import org.chai.util.APIUtil;
 import org.chai.util.IOUtil;
 import org.chai.util.XMLUtil;
 import org.w3c.dom.Document;
@@ -23,28 +23,11 @@ import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
 import com.microsoft.playwright.options.Margin;
 
-import com.azure.core.http.HttpClient;
-import com.azure.core.http.HttpHeaderName;
-import com.azure.core.http.HttpHeaders;
-import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
-import com.azure.core.util.BinaryData;
-import com.azure.core.util.Context;
 import com.azure.core.util.serializer.TypeReference;
 import com.microsoft.azure.functions.*;
 
 public class XmlToPdfFunction {
-
-    private static URL VALIDATE_ENDPOINT;
-    static {
-        try {
-            VALIDATE_ENDPOINT = new URL("https://func-mc-api-java.azurewebsites.net/api/ValidateXml");
-        } catch (java.net.MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-    private static final HttpHeaders VALIDATE_REQUEST_HEADERS = new HttpHeaders().add(HttpHeaderName.CONTENT_TYPE,
-            "text/xml");
 
     @FunctionName("XmlToPdf")
     public HttpResponseMessage run(
@@ -77,11 +60,7 @@ public class XmlToPdfFunction {
                 request.getBody().orElse("null"));
 
         final String xml = request.getBody().orElse("");
-
-        // TODO: Durable Functions with function chaining?
-        final HttpRequest validateRequest = new HttpRequest(com.azure.core.http.HttpMethod.POST, VALIDATE_ENDPOINT,
-                VALIDATE_REQUEST_HEADERS, BinaryData.fromString(xml));
-        final HttpResponse validateResponse = HttpClient.createDefault().sendSync(validateRequest, Context.NONE);
+        final HttpResponse validateResponse = APIUtil.sendValidateRequest(xml);
         final Map<String, String> validateResponseBody = IOUtil.JSON_SERIALIZER
                 .deserializeFromBytes(validateResponse.getBodyAsByteArray().block(),
                         new TypeReference<Map<String, String>>() {
