@@ -39,7 +39,6 @@ import org.chai.util.KeyUtil;
 import org.chai.util.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import com.azure.core.http.HttpResponse;
@@ -108,10 +107,9 @@ public class StampFunction {
             }
 
             // If a Signature already exists, delete it:
-            final NodeList nl = doc.getElementsByTagNameNS(XMLSignature.XMLNS, "Signature");
-            if (nl.getLength() > 0) {
-                final Node signature = nl.item(0);
-                signature.getParentNode().removeChild(signature);
+            final Node signatureNode = XMLUtil.getXmlSignatureNode(doc.getDocumentElement());
+            if (signatureNode != null) {
+                signatureNode.getParentNode().removeChild(signatureNode);
             }
 
             // Sign the document:
