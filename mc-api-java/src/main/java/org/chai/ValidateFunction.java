@@ -41,7 +41,7 @@ import org.chai.util.KeyUtil;
 import org.chai.util.XMLUtil;
 import org.jbibtex.ParseException;
 import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
+import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -128,10 +128,10 @@ public class ValidateFunction {
                         .header("Content-Type", "application/json").build();
             }
 
-            final NodeList nl = doc.getElementsByTagNameNS(XMLSignature.XMLNS, "Signature");
-            if (nl.getLength() > 0) {
+            final Node signatureNode = XMLUtil.getXmlSignatureNode(doc.getDocumentElement());
+            if (signatureNode != null) {
                 // TODO: X.509 certificate + KeySelector?
-                final DOMValidateContext valContext = new DOMValidateContext(PUBLIC_KEY, nl.item(0));
+                final DOMValidateContext valContext = new DOMValidateContext(PUBLIC_KEY, signatureNode);
 
                 final XMLSignatureFactory factory = XMLSignatureFactory.getInstance("DOM");
                 final XMLSignature signature = factory.unmarshalXMLSignature(valContext);

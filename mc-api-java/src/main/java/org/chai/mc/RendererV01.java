@@ -9,6 +9,7 @@ import org.chai.util.CommonMarkUtil;
 import org.chai.util.XMLUtil;
 import org.jbibtex.ParseException;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 public class RendererV01 implements org.chai.mc.Renderer {
@@ -44,13 +45,18 @@ public class RendererV01 implements org.chai.mc.Renderer {
                 """
                             <tr>
                                 <td colspan="2">
-                                    <div style="justify-content: space-between; display: flex; flex-wrap: wrap;">
-                                        <span><b>Release Stage:</b> %s</span>
-                                        <span><b>Release Date:</b> %s</span>
-                                        <span><b>Version:</b> %s</span>
-                                        <span><b>Global Availability:</b> %s</span>
-                                        <span><b>Regulatory Approval:</b> %s</span>
-                                    </div>
+                                    <ul style="
+                                        list-style: none;
+                                        padding-left: 0;
+                                        margin-top: 0;
+                                        margin-bottom: 0;
+                                    ">
+                                        <li><b>Release Stage:</b> %s</li>
+                                        <li><b>Release Date:</b> %s</li>
+                                        <li><b>Version:</b> %s</li>
+                                        <li><b>Global Availability:</b> %s</li>
+                                        <li><b>Regulatory Approval:</b> %s</li>
+                                    </ul>
                                 </td>
                             </tr>
                         """,
@@ -71,7 +77,12 @@ public class RendererV01 implements org.chai.mc.Renderer {
         return String.format(
                 """
                         <td>
-                            <div style="display: flex; flex-direction: column; justify-content: space-between; height: 100%%;">
+                            <div style="
+                                display: flex;
+                                flex-direction: column;
+                                justify-content: space-between;
+                                height: 100%%;
+                            ">
                                 <p style="margin-top: 0"><b>Summary:</b> %s</p>
                                 <p style="margin-bottom: 0"><b>Keywords:</b> %s</p>
                             </div>
@@ -343,6 +354,26 @@ public class RendererV01 implements org.chai.mc.Renderer {
         return BibTeXUtil.bibtexToHtml(bibliography.getTextContent());
     }
 
+    public String renderStamp(final Node signature) {
+        if (signature == null) {
+            return "";
+        } else {
+            return """
+                    <img src="https://food.fnr.sndimg.com/content/dam/images/food/fullset/2009/6/17/2/FNM080109Cover021_pink_s4x3.jpg.rend.hgtvcom.1280.1280.suffix/1383254816256.webp" style="
+                        display: inline-block;
+                        width: 4em;
+                        height: 4em;
+                        float: left;
+                        margin-right: 1em;
+                    ">
+                    <p>CHAI has verified this model card to be in alignment with
+                    instructions set forth by CHAI while demonstrating
+                    sufficient rigorous and detail.</p>
+                    <hr>
+                    """;
+        }
+    }
+
     @Override
     public String render(final Element appliedModelCard) {
         try {
@@ -404,8 +435,9 @@ public class RendererV01 implements org.chai.mc.Renderer {
 
                                     <h2>References</h2>
                                     %s
-
                                     <hr>
+
+                                    %s
 
                                     <p>Note: The mention or sharing of any examples, products, organizations, or individuals does not indicate any endorsement of those examples, products, organizations, or individuals by the Coalition for Health AI (CHAI). Any examples provided here are still under review for alignment with existing standards and instructions. We welcome feedback and stress-testing of the tool in draft form. </p>
 
@@ -427,7 +459,8 @@ public class RendererV01 implements org.chai.mc.Renderer {
                     renderTrustIngredients(XMLUtil.getElement(appliedModelCard, "TrustIngredients")),
                     renderKeyMetrics(XMLUtil.getElement(appliedModelCard, "KeyMetrics")),
                     renderResources(XMLUtil.getElement(appliedModelCard, "Resources")),
-                    renderReferences(XMLUtil.getElement(appliedModelCard, "Bibliography")));
+                    renderReferences(XMLUtil.getElement(appliedModelCard, "Bibliography")),
+                    renderStamp(XMLUtil.getXmlSignatureNode(appliedModelCard)));
         } catch (ParseException | IOException e) {
             throw new RuntimeException(e);
         }

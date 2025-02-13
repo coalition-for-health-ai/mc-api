@@ -3,6 +3,7 @@ package org.chai.util;
 import java.net.URL;
 
 import javax.xml.XMLConstants;
+import javax.xml.crypto.dsig.XMLSignature;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -58,6 +59,10 @@ public class XMLUtil {
         // TODO: standalone="yes" is not applied?
         transformer.setOutputProperty(OutputKeys.STANDALONE, "yes");
         return transformer;
+    }
+
+    public static Node getXmlSignatureNode(final Element parent) {
+        return parent.getElementsByTagNameNS(XMLSignature.XMLNS, "Signature").item(0);
     }
 
     public static Element getElement(final Element parent, final String name) {
