@@ -8,6 +8,7 @@ import java.security.KeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -41,8 +42,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import com.azure.core.http.HttpResponse;
-import com.azure.core.util.serializer.TypeReference;
 import com.microsoft.azure.functions.ExecutionContext;
 import com.microsoft.azure.functions.HttpMethod;
 import com.microsoft.azure.functions.HttpRequestMessage;
@@ -51,6 +50,8 @@ import com.microsoft.azure.functions.HttpStatus;
 import com.microsoft.azure.functions.annotation.AuthorizationLevel;
 import com.microsoft.azure.functions.annotation.FunctionName;
 import com.microsoft.azure.functions.annotation.HttpTrigger;
+
+import reactor.core.publisher.Mono;
 
 public class StampFunction {
 
@@ -86,87 +87,87 @@ public class StampFunction {
         context.getLogger().log(Level.INFO, "ENTRY " + request.getBody().orElse("null"));
 
         final String xml = request.getBody().orElse("");
-        final HttpResponse validateResponse = APIUtil.sendValidateRequest(xml);
-        final Map<String, String> validateResponseBody = IOUtil.JSON_SERIALIZER
-                .deserializeFromBytes(validateResponse.getBodyAsByteArray().block(),
-                        new TypeReference<Map<String, String>>() {
-                        });
-        if (validateResponseBody.containsKey("result") && validateResponseBody.get("result").equals("VALID")) {
-            final Document doc;
-            try {
-                doc = XMLUtil.newDocumentBuilder()
-                        .parse(new InputSource(new StringReader(xml)));
-            } catch (SAXException | IOException e) {
-                final Map<String, String> result = new HashMap<String, String>();
-                result.put("result", "ERROR");
-                result.put("reason", e.getMessage());
-                context.getLogger().log(Level.INFO, "RETURN " + result);
-                return request.createResponseBuilder(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(IOUtil.jsonSerializeToString(result))
-                        .header("Content-Type", "application/json").build();
-            }
+        return APIUtil.sendValidateRequest(xml).flatMap(validateResponse -> {
+            return APIUtil.parseValidateResponseBody(validateResponse).flatMap(validateResponseBody -> {
+                if (validateResponseBody.containsKey("result") &&
+                        validateResponseBody.get("result").equals("VALID")) {
+                    final Document doc;
+                    try {
+                        doc = XMLUtil.newDocumentBuilder()
+                                .parse(new InputSource(new StringReader(xml)));
+                    } catch (SAXException | IOException e) {
+                        return Mono.error(e);
+                    }
 
-            // If a Signature already exists, delete it:
-            final Node signatureNode = XMLUtil.getXmlSignatureNode(doc.getDocumentElement());
-            if (signatureNode != null) {
-                signatureNode.getParentNode().removeChild(signatureNode);
-            }
+                    // If a Signature already exists, delete it:
+                    final Node signatureNode = XMLUtil.getXmlSignatureNode(doc.getDocumentElement());
+                    if (signatureNode != null) {
+                        signatureNode.getParentNode().removeChild(signatureNode);
+                    }
 
-            // Sign the document:
-            // TODO: add timestamp
-            // https://www.w3.org/Consortium/Offices/Presentations/XML_Signatures/slide5-0.htm
-            final String output;
-            try {
-                final DOMSignContext dsc = new DOMSignContext(PRIVATE_KEY,
-                        doc.getDocumentElement());
-                final XMLSignatureFactory fac = XMLSignatureFactory.getInstance("DOM");
-                final Reference ref = fac.newReference("",
-                        fac.newDigestMethod(DigestMethod.SHA256, null),
-                        Collections.singletonList(fac.newTransform(Transform.ENVELOPED,
-                                (TransformParameterSpec) null)),
-                        null, null);
-                final SignedInfo si = fac.newSignedInfo(
-                        fac.newCanonicalizationMethod(
-                                CanonicalizationMethod.INCLUSIVE_11,
-                                (C14NMethodParameterSpec) null),
-                        fac
-                                .newSignatureMethod(
-                                        "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256",
-                                        null),
-                        Collections.singletonList(ref));
-                final KeyInfoFactory kif = fac.getKeyInfoFactory();
-                final KeyValue kv = kif.newKeyValue(PUBLIC_KEY);
-                final KeyInfo ki = kif.newKeyInfo(Collections.singletonList(kv));
-                // can't re-use `signature` because subsequent executions will
-                // cause a duplicate value in the `SignatureValue` element:
-                final XMLSignature signature = fac.newXMLSignature(si, ki);
-                signature.sign(dsc);
+                    // Sign the document:
+                    // TODO: add timestamp
+                    // https://www.w3.org/Consortium/Offices/Presentations/XML_Signatures/slide5-0.htm
+                    final String output;
+                    try {
+                        final DOMSignContext dsc = new DOMSignContext(PRIVATE_KEY,
+                                doc.getDocumentElement());
+                        final XMLSignatureFactory fac = XMLSignatureFactory.getInstance("DOM");
+                        final Reference ref = fac.newReference("",
+                                fac.newDigestMethod(DigestMethod.SHA256, null),
+                                Collections.singletonList(fac.newTransform(Transform.ENVELOPED,
+                                        (TransformParameterSpec) null)),
+                                null, null);
+                        final SignedInfo si = fac.newSignedInfo(
+                                fac.newCanonicalizationMethod(
+                                        CanonicalizationMethod.INCLUSIVE_11,
+                                        (C14NMethodParameterSpec) null),
+                                fac
+                                        .newSignatureMethod(
+                                                "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256",
+                                                null),
+                                Collections.singletonList(ref));
+                        final KeyInfoFactory kif = fac.getKeyInfoFactory();
+                        final KeyValue kv = kif.newKeyValue(PUBLIC_KEY);
+                        final KeyInfo ki = kif.newKeyInfo(Collections.singletonList(kv));
+                        // can't re-use `signature` because subsequent executions will
+                        // cause a duplicate value in the `SignatureValue` element:
+                        final XMLSignature signature = fac.newXMLSignature(si, ki);
+                        signature.sign(dsc);
 
-                final StringWriter writer = new StringWriter();
-                XMLUtil.newTransformer().transform(new DOMSource(doc), new StreamResult(writer));
-                output = writer.toString();
-            } catch (MarshalException | XMLSignatureException | NoSuchAlgorithmException
-                    | InvalidAlgorithmParameterException | KeyException | TransformerException e) {
-                final Map<String, String> result = new HashMap<String, String>();
-                result.put("result", "ERROR");
-                result.put("reason", e.getMessage());
-                context.getLogger().log(Level.INFO, "RETURN " + result);
-                return request.createResponseBuilder(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(IOUtil.jsonSerializeToString(result))
-                        .header("Content-Type", "application/json").build();
-            }
+                        final StringWriter writer = new StringWriter();
+                        XMLUtil.newTransformer().transform(new DOMSource(doc), new StreamResult(writer));
+                        output = writer.toString();
+                    } catch (MarshalException | XMLSignatureException | NoSuchAlgorithmException
+                            | InvalidAlgorithmParameterException | KeyException | TransformerException e) {
+                        return Mono.error(e);
+                    }
 
-            context.getLogger().log(Level.INFO, "RETURN " + output);
-            return request.createResponseBuilder(HttpStatus.OK)
-                    .body(output)
-                    .header("Content-Type", "text/xml").build();
-        } else {
-            final HttpResponseMessage.Builder responseBuilder = request
-                    .createResponseBuilder(HttpStatus.valueOf(validateResponse.getStatusCode()))
-                    .body(validateResponseBody);
-            validateResponse.getHeaders()
-                    .forEach(header -> responseBuilder.header(header.getName(), header.getValue()));
-            return responseBuilder.build();
-        }
+                    context.getLogger().log(Level.INFO, "RETURN " + output);
+                    return Mono.just(request.createResponseBuilder(HttpStatus.OK)
+                            .body(output)
+                            .header("Content-Type", "text/xml").build());
+                } else {
+                    final HttpResponseMessage.Builder responseBuilder = request
+                            .createResponseBuilder(HttpStatus.valueOf(validateResponse.getStatusCode()))
+                            .body(validateResponseBody);
+                    validateResponse.getHeaders()
+                            .forEach(header -> responseBuilder.header(header.getName(),
+                                    header.getValue()));
+                    return Mono.just(responseBuilder.build());
+                }
+            });
+        })
+                .timeout(Duration.ofSeconds(15))
+                .onErrorResume(e -> {
+                    final Map<String, String> result = new HashMap<String, String>();
+                    result.put("result", "ERROR");
+                    result.put("reason", e.getMessage());
+                    context.getLogger().log(Level.INFO, "RETURN " + result);
+                    return Mono.just(
+                            request.createResponseBuilder(HttpStatus.INTERNAL_SERVER_ERROR)
+                                    .body(IOUtil.jsonSerializeToString(result))
+                                    .header("Content-Type", "application/json").build());
+                }).block();
     }
 }

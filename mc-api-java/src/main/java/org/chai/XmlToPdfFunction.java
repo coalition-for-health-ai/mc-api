@@ -3,6 +3,7 @@ package org.chai;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
+import java.time.Duration;
 import java.util.*;
 import java.util.logging.Level;
 
@@ -23,8 +24,8 @@ import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
 import com.microsoft.playwright.options.Margin;
 
-import com.azure.core.http.HttpResponse;
-import com.azure.core.util.serializer.TypeReference;
+import reactor.core.publisher.Mono;
+
 import com.microsoft.azure.functions.*;
 
 public class XmlToPdfFunction {
@@ -36,8 +37,7 @@ public class XmlToPdfFunction {
             }, authLevel = AuthorizationLevel.ANONYMOUS) HttpRequestMessage<Optional<String>> request,
             final ExecutionContext context) {
         if (request.getHttpMethod() == HttpMethod.OPTIONS) {
-            return request.createResponseBuilder(HttpStatus.NO_CONTENT).header("Allow",
-                    "OPTIONS, POST")
+            return request.createResponseBuilder(HttpStatus.NO_CONTENT).header("Allow", "OPTIONS, POST")
                     .header("Accept-Post", "text/xml, application/xml").build();
         }
 
@@ -60,47 +60,56 @@ public class XmlToPdfFunction {
                 request.getBody().orElse("null"));
 
         final String xml = request.getBody().orElse("");
-        final HttpResponse validateResponse = APIUtil.sendValidateRequest(xml);
-        final Map<String, String> validateResponseBody = IOUtil.JSON_SERIALIZER
-                .deserializeFromBytes(validateResponse.getBodyAsByteArray().block(),
-                        new TypeReference<Map<String, String>>() {
-                        });
-        if (validateResponseBody.containsKey("result") &&
-                validateResponseBody.get("result").equals("VALID")) {
-            try {
-                final Document doc = XMLUtil.newDocumentBuilder()
-                        .parse(new InputSource(new StringReader(xml)));
-                final Renderer renderer = RendererFactory.getRenderer("v0.1");
-                final String html = renderer.render(doc.getDocumentElement());
-                final PDDocument pdf = compileHTMLtoPDF(html);
-                final Map<String, String> customProperties = new HashMap<>();
-                customProperties.put("chaiMcXml", xml);
-                customProperties.put("chaiMcSoftwareId", "mc-api 1.0.0");
-                final PDDocument pdfWithProperties = addCustomPropertiesToPDF(pdf, customProperties);
-                final byte[] pdfByteArray = convertPdfToByteArray(pdfWithProperties);
-                pdfWithProperties.close();
-                context.getLogger().log(Level.INFO, "RETURN " + html);
-                return request.createResponseBuilder(HttpStatus.OK).header("Content-Type", "application/pdf")
-                        .body(pdfByteArray)
-                        .build();
-            } catch (SAXException | IOException e) {
-                final Map<String, String> result = new HashMap<String, String>();
-                result.put("result", "ERROR");
-                result.put("reason", e.getMessage());
-                context.getLogger().log(Level.INFO, "RETURN " + result);
-                return request.createResponseBuilder(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(IOUtil.jsonSerializeToString(result))
-                        .header("Content-Type", "application/json").build();
-            }
-        } else {
-            final HttpResponseMessage.Builder responseBuilder = request
-                    .createResponseBuilder(HttpStatus.valueOf(validateResponse.getStatusCode()))
-                    .body(validateResponseBody);
-            validateResponse.getHeaders()
-                    .forEach(header -> responseBuilder.header(header.getName(),
-                            header.getValue()));
-            return responseBuilder.build();
-        }
+        return APIUtil.sendValidateRequest(xml).flatMap(validateResponse -> {
+            return APIUtil.parseValidateResponseBody(validateResponse).flatMap(validateResponseBody -> {
+                if (validateResponseBody.containsKey("result") &&
+                        validateResponseBody.get("result").equals("VALID")) {
+                    try {
+                        final Document doc = XMLUtil.newDocumentBuilder()
+                                .parse(new InputSource(new StringReader(xml)));
+                        final Renderer renderer = RendererFactory.getRenderer("v0.1");
+                        final String html = renderer.render(doc.getDocumentElement());
+                        final PDDocument pdf = compileHTMLtoPDF(html);
+                        final Map<String, String> customProperties = new HashMap<>();
+                        customProperties.put("chaiMcXml", xml);
+                        customProperties.put("chaiMcSoftwareId", "mc-api 1.0.0");
+                        final PDDocument pdfWithProperties = addCustomPropertiesToPDF(pdf, customProperties);
+                        final byte[] pdfByteArray = convertPdfToByteArray(pdfWithProperties);
+                        try {
+                            context.getLogger().log(Level.INFO, "RETURN " + html);
+                            return Mono
+                                    .just(request.createResponseBuilder(HttpStatus.OK)
+                                            .header("Content-Type", "application/pdf")
+                                            .body(pdfByteArray)
+                                            .build());
+                        } finally {
+                            pdfWithProperties.close();
+                        }
+                    } catch (SAXException | IOException e) {
+                        return Mono.error(e);
+                    }
+                } else {
+                    final HttpResponseMessage.Builder responseBuilder = request
+                            .createResponseBuilder(HttpStatus.valueOf(validateResponse.getStatusCode()))
+                            .body(validateResponseBody);
+                    validateResponse.getHeaders()
+                            .forEach(header -> responseBuilder.header(header.getName(),
+                                    header.getValue()));
+                    return Mono.just(responseBuilder.build());
+                }
+            });
+        })
+                .timeout(Duration.ofSeconds(15))
+                .onErrorResume(e -> {
+                    final Map<String, String> result = new HashMap<String, String>();
+                    result.put("result", "ERROR");
+                    result.put("reason", e.getMessage());
+                    context.getLogger().log(Level.INFO, "RETURN " + result);
+                    return Mono.just(
+                            request.createResponseBuilder(HttpStatus.INTERNAL_SERVER_ERROR)
+                                    .body(IOUtil.jsonSerializeToString(result))
+                                    .header("Content-Type", "application/json").build());
+                }).block();
     }
 
     private static PDDocument compileHTMLtoPDF(final String html) throws IOException {
