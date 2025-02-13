@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.chai.util.BibTeXUtil;
 import org.chai.util.CommonMarkUtil;
+import org.chai.util.IOUtil;
 import org.chai.util.XMLUtil;
 import org.jbibtex.ParseException;
 import org.w3c.dom.Element;
@@ -13,6 +14,15 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 public class RendererV01 implements org.chai.mc.Renderer {
+
+    public static String STAMP;
+    static {
+        try {
+            STAMP = IOUtil.getResourceAsBase64("/stamp.png");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public String renderBasicInfo(final Element basicInfo) {
         final String modelName = XMLUtil.getElementText(basicInfo, "ModelName");
@@ -358,10 +368,9 @@ public class RendererV01 implements org.chai.mc.Renderer {
         if (signature == null) {
             return "";
         } else {
-            return """
-                    <img src="https://food.fnr.sndimg.com/content/dam/images/food/fullset/2009/6/17/2/FNM080109Cover021_pink_s4x3.jpg.rend.hgtvcom.1280.1280.suffix/1383254816256.webp" style="
+            return String.format("""
+                    <img src="data:image/png;charset=utf-8;base64,%s" style="
                         display: inline-block;
-                        width: 4em;
                         height: 4em;
                         float: left;
                         margin-right: 1em;
@@ -370,7 +379,7 @@ public class RendererV01 implements org.chai.mc.Renderer {
                     instructions set forth by CHAI while demonstrating
                     sufficient rigorous and detail.</p>
                     <hr>
-                    """;
+                    """, STAMP);
         }
     }
 
