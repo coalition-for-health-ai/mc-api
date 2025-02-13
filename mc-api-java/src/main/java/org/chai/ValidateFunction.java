@@ -1,7 +1,5 @@
 package org.chai;
 
-import com.azure.core.util.serializer.JsonSerializer;
-import com.azure.core.util.serializer.JsonSerializerProviders;
 import com.microsoft.azure.functions.ExecutionContext;
 import com.microsoft.azure.functions.HttpMethod;
 import com.microsoft.azure.functions.HttpRequestMessage;
@@ -77,13 +75,11 @@ public class ValidateFunction {
 
         context.getLogger().log(Level.INFO, "ENTRY " + request.getBody().orElse("null"));
 
-        final JsonSerializer jsonSerializer = JsonSerializerProviders.createInstance(true);
-
         if (!request.getBody().isPresent()) {
             final Map<String, String> result = Collections.singletonMap("result", "NO_DOCUMENT");
             context.getLogger().log(Level.INFO, "RETURN " + result);
             return request.createResponseBuilder(HttpStatus.BAD_REQUEST)
-                    .body(IOUtil.jsonSerializeToString(jsonSerializer, result))
+                    .body(IOUtil.jsonSerializeToString(result))
                     .header("Content-Type", "application/json").build();
         }
 
@@ -102,7 +98,7 @@ public class ValidateFunction {
             result.put("reason", "XML Schema Validation failed: " + e.getMessage());
             context.getLogger().log(Level.INFO, "RETURN " + result);
             return request.createResponseBuilder(HttpStatus.OK)
-                    .body(IOUtil.jsonSerializeToString(jsonSerializer, result))
+                    .body(IOUtil.jsonSerializeToString(result))
                     .header("Content-Type", "application/json").build();
         }
 
@@ -124,7 +120,7 @@ public class ValidateFunction {
                 result.put("reason", "Bibliography element BibTeX validation failed: " + e.getMessage());
                 context.getLogger().log(Level.INFO, "RETURN " + result);
                 return request.createResponseBuilder(HttpStatus.OK)
-                        .body(IOUtil.jsonSerializeToString(jsonSerializer, result))
+                        .body(IOUtil.jsonSerializeToString(result))
                         .header("Content-Type", "application/json").build();
             }
 
@@ -160,7 +156,7 @@ public class ValidateFunction {
 
                     context.getLogger().log(Level.INFO, "RETURN " + result);
                     return request.createResponseBuilder(HttpStatus.OK)
-                            .body(IOUtil.jsonSerializeToString(jsonSerializer, result))
+                            .body(IOUtil.jsonSerializeToString(result))
                             .header("Content-Type", "application/json").build();
                 }
             }
@@ -170,14 +166,14 @@ public class ValidateFunction {
             result.put("reason", e.getMessage());
             context.getLogger().log(Level.INFO, "RETURN " + result);
             return request.createResponseBuilder(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(IOUtil.jsonSerializeToString(jsonSerializer, result))
+                    .body(IOUtil.jsonSerializeToString(result))
                     .header("Content-Type", "application/json").build();
         }
 
         final Map<String, Object> result = Collections.singletonMap("result", "VALID");
         context.getLogger().log(Level.INFO, "RETURN " + result);
         return request.createResponseBuilder(HttpStatus.OK)
-                .body(IOUtil.jsonSerializeToString(jsonSerializer, result))
+                .body(IOUtil.jsonSerializeToString(result))
                 .header("Content-Type", "application/json").build();
     }
 }

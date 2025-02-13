@@ -48,8 +48,6 @@ import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
 import com.azure.core.util.BinaryData;
 import com.azure.core.util.Context;
-import com.azure.core.util.serializer.JsonSerializer;
-import com.azure.core.util.serializer.JsonSerializerProviders;
 import com.azure.core.util.serializer.TypeReference;
 import com.microsoft.azure.functions.ExecutionContext;
 import com.microsoft.azure.functions.HttpMethod;
@@ -98,22 +96,20 @@ public class StampFunction {
         }
 
         // TODO: is it safe to re-use any of the following?
-        // - JsonSerializer
         // - HttpClient
         // - XMLSignatureFactory
         // - Transformer
 
         context.getLogger().log(Level.INFO, "ENTRY " + request.getBody().orElse("null"));
 
-        final JsonSerializer jsonSerializer = JsonSerializerProviders.createInstance(true);
-
         // TODO: Durable Functions with function chaining?
         final HttpRequest validateRequest = new HttpRequest(com.azure.core.http.HttpMethod.POST,
                 VALIDATE_ENDPOINT,
                 VALIDATE_REQUEST_HEADERS,
                 BinaryData.fromString(request.getBody().orElse("")));
-        final HttpResponse validateResponse = HttpClient.createDefault().sendSync(validateRequest, Context.NONE);
-        final Map<String, String> validateResponseBody = jsonSerializer
+        final HttpResponse validateResponse = HttpClient.createDefault().sendSync(validateRequest,
+                Context.NONE);
+        final Map<String, String> validateResponseBody = IOUtil.JSON_SERIALIZER
                 .deserializeFromBytes(validateResponse.getBodyAsByteArray().block(),
                         new TypeReference<Map<String, String>>() {
                         });
@@ -128,7 +124,7 @@ public class StampFunction {
                 result.put("reason", e.getMessage());
                 context.getLogger().log(Level.INFO, "RETURN " + result);
                 return request.createResponseBuilder(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(IOUtil.jsonSerializeToString(jsonSerializer, result))
+                        .body(IOUtil.jsonSerializeToString(result))
                         .header("Content-Type", "application/json").build();
             }
 
@@ -157,7 +153,9 @@ public class StampFunction {
                                 CanonicalizationMethod.INCLUSIVE_11,
                                 (C14NMethodParameterSpec) null),
                         fac
-                                .newSignatureMethod("http://www.w3.org/2001/04/xmldsig-more#rsa-sha256", null),
+                                .newSignatureMethod(
+                                        "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256",
+                                        null),
                         Collections.singletonList(ref));
                 final KeyInfoFactory kif = fac.getKeyInfoFactory();
                 final KeyValue kv = kif.newKeyValue(PUBLIC_KEY);
@@ -177,7 +175,7 @@ public class StampFunction {
                 result.put("reason", e.getMessage());
                 context.getLogger().log(Level.INFO, "RETURN " + result);
                 return request.createResponseBuilder(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(IOUtil.jsonSerializeToString(jsonSerializer, result))
+                        .body(IOUtil.jsonSerializeToString(result))
                         .header("Content-Type", "application/json").build();
             }
 
