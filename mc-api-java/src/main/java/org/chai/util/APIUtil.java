@@ -14,6 +14,8 @@ import com.azure.core.util.serializer.TypeReference;
 import reactor.core.publisher.Mono;
 
 public class APIUtil {
+    private static final HttpClient HTTP_CLIENT = HttpClient.createDefault();
+
     private static final URL VALIDATE_ENDPOINT;
     static {
         try {
@@ -33,7 +35,7 @@ public class APIUtil {
 
     public static Mono<HttpResponse> sendValidateRequest(final String xml) {
         // TODO: Durable Functions with function chaining?
-        return HttpClient.createDefault().send(new HttpRequest(com.azure.core.http.HttpMethod.POST,
+        return HTTP_CLIENT.send(new HttpRequest(com.azure.core.http.HttpMethod.POST,
                 VALIDATE_ENDPOINT,
                 VALIDATE_REQUEST_HEADERS,
                 BinaryData.fromString(xml)));

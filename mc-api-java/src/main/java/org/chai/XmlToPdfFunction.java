@@ -53,7 +53,6 @@ public class XmlToPdfFunction {
         }
 
         // TODO: is it safe to re-use any of the following?
-        // - HttpClient
         // - Playwright / Browser
 
         context.getLogger().log(Level.INFO, "ENTRY " +
@@ -70,11 +69,9 @@ public class XmlToPdfFunction {
                         final Renderer renderer = RendererFactory.getRenderer("v0.1");
                         final String html = renderer.render(doc.getDocumentElement());
                         final PDDocument pdf = compileHTMLtoPDF(html);
-                        final Map<String, String> customProperties = new HashMap<>();
-                        customProperties.put("chaiMcXml", xml);
-                        customProperties.put("chaiMcSoftwareId", "mc-api 1.0.0");
-                        final PDDocument pdfWithProperties = addCustomPropertiesToPDF(pdf, customProperties);
-                        final byte[] pdfByteArray = convertPdfToByteArray(pdfWithProperties);
+                        pdf.getDocumentInformation().setCustomMetadataValue("chaiMcXml", xml);
+                        pdf.getDocumentInformation().setCustomMetadataValue("chaiMcSoftwareId", "mc-api 1.0.0");
+                        final byte[] pdfByteArray = convertPDFToByteArray(pdf);
                         try {
                             context.getLogger().log(Level.INFO, "RETURN " + html);
                             return Mono
@@ -83,7 +80,7 @@ public class XmlToPdfFunction {
                                             .body(pdfByteArray)
                                             .build());
                         } finally {
-                            pdfWithProperties.close();
+                            pdf.close();
                         }
                     } catch (SAXException | IOException e) {
                         return Mono.error(e);
@@ -125,14 +122,7 @@ public class XmlToPdfFunction {
         }
     }
 
-    private PDDocument addCustomPropertiesToPDF(final PDDocument pdf, final Map<String, String> properties) {
-        for (Map.Entry<String, String> property : properties.entrySet()) {
-            pdf.getDocumentInformation().setCustomMetadataValue(property.getKey(), property.getValue());
-        }
-        return pdf;
-    }
-
-    private byte[] convertPdfToByteArray(final PDDocument document) throws IOException {
+    private byte[] convertPDFToByteArray(final PDDocument document) throws IOException {
         byte[] byteArray = null;
         try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
             document.save(byteArrayOutputStream);

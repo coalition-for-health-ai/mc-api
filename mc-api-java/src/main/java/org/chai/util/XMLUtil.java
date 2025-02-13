@@ -4,6 +4,7 @@ import java.net.URL;
 
 import javax.xml.XMLConstants;
 import javax.xml.crypto.dsig.XMLSignature;
+import javax.xml.crypto.dsig.XMLSignatureFactory;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -18,6 +19,12 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 public class XMLUtil {
+    public static final SchemaFactory SCHEMA_FACTORY = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+
+    public static final XMLSignatureFactory XML_SIGNATURE_FACTORY = XMLSignatureFactory.getInstance("DOM");
+
+    private static final TransformerFactory TRANSFORMER_FACTORY = TransformerFactory.newInstance();
+
     public static DocumentBuilderFactory newDocumentBuilderFactory() {
         try {
             final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -48,7 +55,7 @@ public class XMLUtil {
     public static Transformer newTransformer() {
         final Transformer transformer;
         try {
-            transformer = TransformerFactory.newInstance().newTransformer();
+            transformer = TRANSFORMER_FACTORY.newTransformer();
         } catch (TransformerConfigurationException | TransformerFactoryConfigurationError e) {
             throw new RuntimeException(e);
         }

@@ -21,16 +21,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Level;
 
-import javax.xml.XMLConstants;
 import javax.xml.crypto.MarshalException;
 import javax.xml.crypto.dsig.Reference;
 import javax.xml.crypto.dsig.XMLSignature;
 import javax.xml.crypto.dsig.XMLSignatureException;
-import javax.xml.crypto.dsig.XMLSignatureFactory;
 import javax.xml.crypto.dsig.dom.DOMValidateContext;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
 import org.chai.util.BibTeXUtil;
@@ -69,10 +66,6 @@ public class ValidateFunction {
                     .header("Accept-Post", "text/xml, application/xml").build();
         }
 
-        // TODO: is it safe to re-use any of the following?
-        // - JsonSerializer
-        // - DocumentBuilder or DocumentBuilderFactory
-
         context.getLogger().log(Level.INFO, "ENTRY " + request.getBody().orElse("null"));
 
         if (!request.getBody().isPresent()) {
@@ -88,8 +81,7 @@ public class ValidateFunction {
 
         // XML Schema Validation:
         try {
-            final SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            final Schema schema = factory.newSchema(new URL("https://mc.chai.org/v0.1/schema.xsd"));
+            final Schema schema = XMLUtil.SCHEMA_FACTORY.newSchema(new URL("https://mc.chai.org/v0.1/schema.xsd"));
             final Validator validator = schema.newValidator();
             validator.validate(new StreamSource(chaiMcXmlReader));
         } catch (SAXException | IOException e) {
@@ -129,8 +121,7 @@ public class ValidateFunction {
                 // TODO: X.509 certificate + KeySelector?
                 final DOMValidateContext valContext = new DOMValidateContext(PUBLIC_KEY, signatureNode);
 
-                final XMLSignatureFactory factory = XMLSignatureFactory.getInstance("DOM");
-                final XMLSignature signature = factory.unmarshalXMLSignature(valContext);
+                final XMLSignature signature = XMLUtil.XML_SIGNATURE_FACTORY.unmarshalXMLSignature(valContext);
                 final boolean coreValidity = signature.validate(valContext);
 
                 if (!coreValidity) {

@@ -23,7 +23,6 @@ import javax.xml.crypto.dsig.SignedInfo;
 import javax.xml.crypto.dsig.Transform;
 import javax.xml.crypto.dsig.XMLSignature;
 import javax.xml.crypto.dsig.XMLSignatureException;
-import javax.xml.crypto.dsig.XMLSignatureFactory;
 import javax.xml.crypto.dsig.dom.DOMSignContext;
 import javax.xml.crypto.dsig.keyinfo.KeyInfo;
 import javax.xml.crypto.dsig.keyinfo.KeyInfoFactory;
@@ -79,11 +78,6 @@ public class StampFunction {
                     .header("Accept-Post", "text/xml, application/xml").build();
         }
 
-        // TODO: is it safe to re-use any of the following?
-        // - HttpClient
-        // - XMLSignatureFactory
-        // - Transformer
-
         context.getLogger().log(Level.INFO, "ENTRY " + request.getBody().orElse("null"));
 
         final String xml = request.getBody().orElse("");
@@ -112,27 +106,27 @@ public class StampFunction {
                     try {
                         final DOMSignContext dsc = new DOMSignContext(PRIVATE_KEY,
                                 doc.getDocumentElement());
-                        final XMLSignatureFactory fac = XMLSignatureFactory.getInstance("DOM");
-                        final Reference ref = fac.newReference("",
-                                fac.newDigestMethod(DigestMethod.SHA256, null),
-                                Collections.singletonList(fac.newTransform(Transform.ENVELOPED,
-                                        (TransformParameterSpec) null)),
+                        final Reference ref = XMLUtil.XML_SIGNATURE_FACTORY.newReference("",
+                                XMLUtil.XML_SIGNATURE_FACTORY.newDigestMethod(DigestMethod.SHA256, null),
+                                Collections
+                                        .singletonList(XMLUtil.XML_SIGNATURE_FACTORY.newTransform(Transform.ENVELOPED,
+                                                (TransformParameterSpec) null)),
                                 null, null);
-                        final SignedInfo si = fac.newSignedInfo(
-                                fac.newCanonicalizationMethod(
+                        final SignedInfo si = XMLUtil.XML_SIGNATURE_FACTORY.newSignedInfo(
+                                XMLUtil.XML_SIGNATURE_FACTORY.newCanonicalizationMethod(
                                         CanonicalizationMethod.INCLUSIVE_11,
                                         (C14NMethodParameterSpec) null),
-                                fac
+                                XMLUtil.XML_SIGNATURE_FACTORY
                                         .newSignatureMethod(
                                                 "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256",
                                                 null),
                                 Collections.singletonList(ref));
-                        final KeyInfoFactory kif = fac.getKeyInfoFactory();
+                        final KeyInfoFactory kif = XMLUtil.XML_SIGNATURE_FACTORY.getKeyInfoFactory();
                         final KeyValue kv = kif.newKeyValue(PUBLIC_KEY);
                         final KeyInfo ki = kif.newKeyInfo(Collections.singletonList(kv));
                         // can't re-use `signature` because subsequent executions will
                         // cause a duplicate value in the `SignatureValue` element:
-                        final XMLSignature signature = fac.newXMLSignature(si, ki);
+                        final XMLSignature signature = XMLUtil.XML_SIGNATURE_FACTORY.newXMLSignature(si, ki);
                         signature.sign(dsc);
 
                         final StringWriter writer = new StringWriter();
