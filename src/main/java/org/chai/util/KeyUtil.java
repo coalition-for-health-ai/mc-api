@@ -19,7 +19,7 @@ public class KeyUtil {
     public static PublicKey getPublicKey() {
         try {
             return KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(
-                    StampFunction.class.getResourceAsStream("/public_key.der").readAllBytes()));
+                    KeyUtil.class.getResourceAsStream("/public_key.der").readAllBytes()));
         } catch (InvalidKeySpecException | NoSuchAlgorithmException | IOException e) {
             throw new RuntimeException(e);
         }

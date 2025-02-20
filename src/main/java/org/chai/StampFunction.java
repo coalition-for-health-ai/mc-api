@@ -152,7 +152,7 @@ public class StampFunction {
                 }
             });
         })
-                .timeout(Duration.ofSeconds(15))
+                .timeout(Duration.ofSeconds(30))
                 .onErrorResume(e -> {
                     final Map<String, String> result = new HashMap<String, String>();
                     result.put("result", "ERROR");
