@@ -1,0 +1,14 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "",
+    "AzureWebJobsStorage__accountName": "rgmcapibcfd",
+    "FUNCTIONS_WORKER_RUNTIME": "java",
+    "FUNCTIONS_EXTENSION_VERSION": "~4",
+    "APPLICATIONINSIGHTS_CONNECTION_STRING": "InstrumentationKey=79f144a4-8cd1-46a3-b3ab-598ae0f8c9f8;IngestionEndpoint=https://canadacentral-1.in.applicationinsights.azure.com/;LiveEndpoint=https://canadacentral.livediagnostics.monitor.azure.com/;ApplicationId=f711e856-34f5-42d0-a395-38447711b06b",
+    "AzureWebJobsSecretStorageType": "files",
+    "KEY_VAULT_NAME": "keyvault-mc-api",
+    "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD": "1"
+  },
+  "ConnectionStrings": {}
+}
