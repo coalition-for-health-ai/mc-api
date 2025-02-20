@@ -3,6 +3,8 @@ ARG JAVA_VERSION=17
 #FROM mcr.microsoft.com/azure-functions/java:4-java$JAVA_VERSION-core-tools AS installer-env
 FROM mcr.microsoft.com/azure-functions/java:4-java$JAVA_VERSION-build AS installer-env
 
+ENV PATH="/usr/lib/jvm/java-$JAVA_VERSION-openjdk/bin:${PATH}"
+
 COPY . /src/java-function-app
 RUN cd /src/java-function-app && \
     mkdir -p /home/site/wwwroot && \
