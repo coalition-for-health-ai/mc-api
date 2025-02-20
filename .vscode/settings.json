@@ -1,5 +1,5 @@
 {
-    "java.configuration.updateBuildConfiguration": "interactive",
+    "java.configuration.updateBuildConfiguration": "automatic",
     "azureFunctions.javaBuildTool": "maven",
     "azureFunctions.deploySubpath": "target/azure-functions/func-mc-api",
     "azureFunctions.projectLanguage": "Java",
