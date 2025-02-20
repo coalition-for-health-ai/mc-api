@@ -19,7 +19,7 @@ public class APIUtil {
     private static final URL VALIDATE_ENDPOINT;
     static {
         try {
-            VALIDATE_ENDPOINT = new URL("https://func-mc-api-java.azurewebsites.net/api/ValidateXml");
+            VALIDATE_ENDPOINT = new URL("https://func-mc-api.azurewebsites.net/api/ValidateXml");
         } catch (java.net.MalformedURLException e) {
             throw new RuntimeException(e);
         }
