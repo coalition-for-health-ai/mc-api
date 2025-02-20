@@ -1,7 +1,7 @@
 {
     "java.configuration.updateBuildConfiguration": "interactive",
     "azureFunctions.javaBuildTool": "maven",
-    "azureFunctions.deploySubpath": "mc-api-java/target/azure-functions/mc-api-java-20250122235758602",
+    "azureFunctions.deploySubpath": "target/azure-functions/func-mc-api",
     "azureFunctions.projectLanguage": "Java",
     "azureFunctions.projectRuntime": "~4",
     "debug.internalConsoleOptions": "neverOpen",

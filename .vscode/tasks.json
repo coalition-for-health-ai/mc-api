@@ -8,7 +8,7 @@
 			"problemMatcher": "$func-java-watch",
 			"isBackground": true,
 			"options": {
-				"cwd": "${workspaceFolder}/mc-api-java/target/azure-functions/mc-api-java-20250122235758602"
+				"cwd": "${workspaceFolder}/target/azure-functions/func-mc-api"
 			},
 			"dependsOn": "package (functions)"
 		},
@@ -21,7 +21,7 @@
 				"isDefault": true
 			},
 			"options": {
-				"cwd": "${workspaceFolder}/mc-api-java"
+				"cwd": "${workspaceFolder}"
 			}
 		}
 	]
