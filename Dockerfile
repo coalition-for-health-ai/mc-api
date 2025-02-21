@@ -20,8 +20,9 @@ FROM mcr.microsoft.com/azure-functions/java:4-java$JAVA_VERSION-appservice
 # This image isn't ssh enabled
 #FROM mcr.microsoft.com/azure-functions/java:4-java$JAVA_VERSION
 
-# https://github.com/microsoft/playwright/blob/v1.50.0/packages/playwright-core/src/server/registry/nativeDeps.ts#L686-L709
-RUN apt-get update && apt-get install --no-install-recommends -y \
+RUN apt-get update && \
+    # https://github.com/microsoft/playwright/blob/v1.50.0/packages/playwright-core/src/server/registry/nativeDeps.ts#L686-L709
+    apt-get install --no-install-recommends -y \
         libasound2 \
         libatk-bridge2.0-0 \
         libatk1.0-0 \
@@ -44,7 +45,21 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
         libxfixes3 \
         libxkbcommon0 \
         libxrandr2 && \
-        apt-get clean && \
+    # https://github.com/microsoft/playwright/blob/v1.50.0/packages/playwright-core/src/server/registry/nativeDeps.ts#L672-L685
+    apt-get install --no-install-recommends -y \
+        xvfb \
+        fonts-noto-color-emoji \
+        fonts-unifont \
+        libfontconfig1 \
+        libfreetype6 \
+        xfonts-cyrillic \
+        xfonts-scalable \
+        fonts-liberation \
+        fonts-ipafont-gothic \
+        fonts-wqy-zenhei \
+        fonts-tlwg-loma-otf \
+        fonts-freefont-ttf && \
+    apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 ENV AzureWebJobsScriptRoot=/home/site/wwwroot \
