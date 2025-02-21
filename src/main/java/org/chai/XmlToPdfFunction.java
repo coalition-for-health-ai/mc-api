@@ -20,6 +20,7 @@ import org.xml.sax.SAXException;
 
 import com.microsoft.azure.functions.annotation.*;
 import com.microsoft.playwright.Browser;
+import com.microsoft.playwright.BrowserType.LaunchOptions;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
 import com.microsoft.playwright.options.Margin;
@@ -112,7 +113,8 @@ public class XmlToPdfFunction {
 
     private static PDDocument compileHTMLtoPDF(final String html) throws IOException {
         try (final Playwright playwright = Playwright.create()) {
-            final Browser browser = playwright.chromium().launch();
+            final Browser browser = playwright.chromium()
+                    .launch(new LaunchOptions().setArgs(Collections.singletonList("--disable-web-security")));
             final Page page = browser.newPage();
             page.navigate("about:blank");
             page.setContent(html, new Page.SetContentOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
