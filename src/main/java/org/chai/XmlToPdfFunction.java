@@ -116,6 +116,7 @@ public class XmlToPdfFunction {
             final Page page = browser.newPage();
             page.navigate("about:blank");
             page.setContent(html, new Page.SetContentOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
+            page.waitForFunction("document.fonts.ready");
             final byte[] pdf = page.pdf(new Page.PdfOptions()
                     .setMargin(new Margin().setTop("0.5in").setRight("0.5in").setBottom("0.5in").setLeft("0.5in"))
                     .setFormat("Letter"));
