@@ -23,6 +23,7 @@ import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
 import com.microsoft.playwright.options.Margin;
+import com.microsoft.playwright.options.WaitUntilState;
 
 import reactor.core.publisher.Mono;
 
@@ -114,7 +115,7 @@ public class XmlToPdfFunction {
             final Browser browser = playwright.chromium().launch();
             final Page page = browser.newPage();
             page.navigate("about:blank");
-            page.setContent(html);
+            page.setContent(html, new Page.SetContentOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
             final byte[] pdf = page.pdf(new Page.PdfOptions()
                     .setMargin(new Margin().setTop("0.5in").setRight("0.5in").setBottom("0.5in").setLeft("0.5in"))
                     .setFormat("Letter"));
