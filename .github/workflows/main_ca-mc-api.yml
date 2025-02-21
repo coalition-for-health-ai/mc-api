@@ -11,19 +11,17 @@ on:
 
 env:
   AZURE_CONTAINERAPP_NAME: func-mc-api # set this to your container app name on Azure
-  AZURE_RESOURCE_GROUP: 'rg-mc-api'
-  AZURE_CONTAINERAPP_ENVIRONMENT: 'cae-mc-api'
+  AZURE_RESOURCE_GROUP: rg-mc-api
+  AZURE_CONTAINERAPP_ENVIRONMENT: cae-mc-api
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
-      packages: write
-      attestations: write
+    permissions: 
+      id-token: write #This is required for requesting the OIDC JWT Token
+      contents: read #Required when GH token is used to authenticate with private repo
 
     steps:
       - name: 'Checkout GitHub Action'
@@ -32,12 +30,12 @@ jobs:
       - name: Login to Azure
         uses: Azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_61B3F2E3E76C4755960A2B438FFF7AB0 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_F8747861221D4927922875BE55E438E2 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_7A179AF4126C4261A6019EC20220C2AD }}
+          client-id: ${{ secrets.CAMCAPI_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.CAMCAPI_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.CAMCAPI_AZURE_SUBSCRIPTION_ID }}
 
       - name: Deploy to Azure Container App
-        uses: Azure/container-apps-deploy-action@v1
+        uses: Azure/container-apps-deploy-action@v2
         with:
           registryUrl: ${{ env.REGISTRY }}
           registryUsername: ${{ github.actor }}
