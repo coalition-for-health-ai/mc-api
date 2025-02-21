@@ -8,8 +8,8 @@ ENV PATH="/usr/lib/jvm/java-$JAVA_VERSION-openjdk/bin:${PATH}"
 COPY . /src/java-function-app
 RUN cd /src/java-function-app && \
     mkdir -p /home/site/wwwroot && \
-    mvn exec:java -e -D exec.mainClass=com.microsoft.playwright.CLI -D exec.args="install chromium --with-deps --only-shell" && \
     mvn clean package && \
+    mvn exec:java -e -D exec.mainClass=com.microsoft.playwright.CLI -D exec.args="install chromium --with-deps --only-shell" && \
     cd ./target/azure-functions/ && \
     cd $(ls -d */|head -n 1) && \
     cp -a . /home/site/wwwroot
