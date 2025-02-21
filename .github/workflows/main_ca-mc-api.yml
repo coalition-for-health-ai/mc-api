@@ -1,0 +1,51 @@
+# Docs for the Azure Container Apps Deploy action: https://github.com/Azure/container-apps-deploy-action
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
+name: Build and deploy Java project to Azure Container App - ca-mc-api
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  AZURE_CONTAINERAPP_NAME: func-mc-api # set this to your container app name on Azure
+  AZURE_RESOURCE_GROUP: 'rg-mc-api'
+  AZURE_CONTAINERAPP_ENVIRONMENT: 'cae-mc-api'
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write #This is required for requesting the JWT
+      contents: read #This is required for actions/checkout
+      packages: write
+      attestations: write
+
+    steps:
+      - name: 'Checkout GitHub Action'
+        uses: actions/checkout@v4
+
+      - name: Login to Azure
+        uses: Azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_61B3F2E3E76C4755960A2B438FFF7AB0 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_F8747861221D4927922875BE55E438E2 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_7A179AF4126C4261A6019EC20220C2AD }}
+
+      - name: Deploy to Azure Container App
+        uses: Azure/container-apps-deploy-action@v1
+        with:
+          registryUrl: ${{ env.REGISTRY }}
+          registryUsername: ${{ github.actor }}
+          registryPassword: ${{ secrets.GITHUB_TOKEN }}
+          appSourcePath: ${{ github.workspace }}
+          containerAppName: ${{ env.AZURE_CONTAINERAPP_NAME }}
+          resourceGroup: ${{ env.AZURE_RESOURCE_GROUP }}
+          containerAppEnvironment: ${{ env.AZURE_CONTAINERAPP_ENVIRONMENT }}
+          targetPort: 80
+          ingress: external
+          imageToBuild: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
