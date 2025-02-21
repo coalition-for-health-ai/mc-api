@@ -21,6 +21,8 @@ FROM mcr.microsoft.com/azure-functions/java:4-java$JAVA_VERSION-appservice
 #FROM mcr.microsoft.com/azure-functions/java:4-java$JAVA_VERSION
 
 RUN apt-get update && \
+    apt-get install --no-install-recommends -y \
+        fonts-roboto && \
     # https://github.com/microsoft/playwright/blob/v1.50.0/packages/playwright-core/src/server/registry/nativeDeps.ts#L686-L709
     apt-get install --no-install-recommends -y \
         libasound2 \

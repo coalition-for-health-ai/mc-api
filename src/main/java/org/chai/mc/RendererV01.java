@@ -401,7 +401,7 @@ public class RendererV01 implements org.chai.mc.Renderer {
                                         :root {
                                             print-color-adjust: exact;
                                             -webkit-print-color-adjust: exact;
-                                            font-family: "Roboto", system-ui, sans-serif;
+                                            font-family: "Roboto", sans-serif;
                                             font-optical-sizing: auto;
                                             font-style: normal;
                                             word-wrap: break-word;
