@@ -113,10 +113,12 @@ public class XmlToPdfFunction {
         try (final Playwright playwright = Playwright.create()) {
             final Browser browser = playwright.chromium().launch();
             final Page page = browser.newPage();
+            page.navigate("about:blank");
             page.setContent(html);
             final byte[] pdf = page.pdf(new Page.PdfOptions()
                     .setMargin(new Margin().setTop("0.5in").setRight("0.5in").setBottom("0.5in").setLeft("0.5in"))
                     .setFormat("Letter"));
+            page.close();
             browser.close();
             return Loader.loadPDF(pdf);
         }
