@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_CONTAINERAPP_NAME: func-mc-api # set this to your container app name on Azure
+  AZURE_CONTAINERAPP_NAME: ca-mc-api # set this to your container app name on Azure
   AZURE_RESOURCE_GROUP: rg-mc-api
   AZURE_CONTAINERAPP_ENVIRONMENT: cae-mc-api
   REGISTRY: ghcr.io
