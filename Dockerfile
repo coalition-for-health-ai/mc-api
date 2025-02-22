@@ -67,6 +67,9 @@ RUN apt-get update && \
 ENV AzureWebJobsScriptRoot=/home/site/wwwroot \
     AzureFunctionsJobHost__Logging__Console__IsEnabled=true
 ENV PLAYWRIGHT_BROWSERS_PATH=/home/.cache/ms-playwright
+ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 
 COPY --from=installer-env ["/home/site/wwwroot", "/home/site/wwwroot"]
 COPY --from=installer-env /home/.cache/ms-playwright /home/.cache/ms-playwright
+
+EXPOSE 80
