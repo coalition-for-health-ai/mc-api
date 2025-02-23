@@ -19,7 +19,7 @@ public class APIUtil {
     private static final URL VALIDATE_ENDPOINT;
     static {
         try {
-            VALIDATE_ENDPOINT = new URL("https://ca-mc-api.bravefield-a1100c50.eastus2.azurecontainerapps.io/api/ValidateXml");
+            VALIDATE_ENDPOINT = new URL("https://ca-mc-api.happyfield-91e442d9.eastus2.azurecontainerapps.io/api/ValidateXml");
         } catch (java.net.MalformedURLException e) {
             throw new RuntimeException(e);
         }
