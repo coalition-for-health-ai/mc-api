@@ -1,0 +1,87 @@
+openapi: 3.1.0
+info:
+  title: CHAI Model Card API
+  description: |
+    This API provides utilities to interface with the CHAI Applied Model Card.
+  version: "1.0.0"
+servers:
+  - url: https://api.mc.chai.org/api
+    description: Production server
+paths:
+  /ValidateXml:
+    options:
+      summary: "Returns permitted communication options."
+      responses:
+        '204':
+          description: "No content"
+          headers:
+            Allow:
+              description: "Allowed HTTP methods"
+              schema:
+                type: string
+                const: "OPTIONS, POST"
+            Accept-Post:
+              description: "Accepted Content-Types for POST"
+              schema:
+                type: string
+                const: "text/xml, application/xml"
+    post:
+      summary: "Validate an XML document against schema and validate stamp"
+      requestBody:
+        required: true
+        content:
+          text/xml:
+            schema:
+              type: string
+              description: "XML payload"
+          application/xml:
+            schema:
+              type: string
+              description: "XML payload"
+      responses:
+        '200':
+          description: |
+            Successful response indicating the XML is either VALID or INVALID.
+            In the INVALID case, the response includes a 'reason' field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    enum: [VALID, INVALID]
+                    description: "Validation status"
+                  reason:
+                    type: string
+                    description: "Reason for invalidity or error (if applicable)"
+        '400':
+          description: "Bad Request. Returned when the XML document is missing."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    const: "NO_DOCUMENT"
+        '415':
+          description: "Unsupported Media Type. Returned when the Content-Type header is missing or not acceptable."
+          headers:
+            Accept-Post:
+              description: "Accepted Content-Types for POST"
+              schema:
+                type: string
+                const: "text/xml, application/xml"
+        '500':
+          description: "Internal Server Error. Returned when an exception occurs during signature or XML processing."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    const: "ERROR"
+                  reason:
+                    type: string
+      security: []
