@@ -85,3 +85,71 @@ paths:
                   reason:
                     type: string
       security: []
+  /XmlToPdf:
+    options:
+      summary: "Returns permitted communication options."
+      responses:
+        '204':
+          description: "No content"
+          headers:
+            Allow:
+              description: "Allowed HTTP methods"
+              schema:
+                type: string
+                const: "OPTIONS, POST"
+            Accept-Post:
+              description: "Accepted Content-Types for POST"
+              schema:
+                type: string
+                const: "text/xml, application/xml"
+    post:
+      summary: "Convert a model card to a PDF"
+      requestBody:
+        required: true
+        content:
+          text/xml:
+            schema:
+              type: string
+              description: "XML payload"
+          application/xml:
+            schema:
+              type: string
+              description: "XML payload"
+      responses:
+        '200':
+          description: "PDF successfully generated"
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: "Bad Request. Returned when the XML document is missing."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    const: "NO_DOCUMENT"
+        '415':
+          description: "Unsupported Media Type. Returned when the Content-Type header is missing or not acceptable."
+          headers:
+            Accept-Post:
+              description: "Accepted Content-Types for POST"
+              schema:
+                type: string
+                const: "text/xml, application/xml"
+        '500':
+          description: "Internal Server Error. Returned when an exception occurs during processing the XML or compiling the PDF."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    const: "ERROR"
+                  reason:
+                    type: string
+      security: []

@@ -10,3 +10,8 @@ If using `curl`, be sure to use the `--data-binary` flag (and not the `-d` short
 curl -X POST --data-binary @input.xml -H "Content-Type: text/xml" https://api.mc.chai.org/api/ValidateXml -D -
 ```
 
+### `XmlToPdf`
+
+```sh
+curl -X POST --data-binary @input.xml -H "Content-Type: text/xml" https://api.mc.chai.org/api/XmlToPdf -o output.pdf
+```
