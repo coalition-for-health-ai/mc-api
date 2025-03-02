@@ -7,7 +7,8 @@
     "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD": "CfDJ8ET3eUSlJThPqwxRFSQ3SLQYxq+NsHnZncCcitB+IjrmozQcYBQI1YLJjJvb1AEBeITzRaYyERso2dnhySiPd/U0bUPo+2RQvS3tj2rSVPD4rwcEdTLt/SyUvEUTjNNNYA==",
     "AzureWebJobsSecretStorageType": "CfDJ8ET3eUSlJThPqwxRFSQ3SLTV2MkccOniXdHae+DYAX6dInciZa8CFlBIbVuAnXGPdg4iWB44DKl1mqS4zXYuhAPCmzPqjg8ynsI39fN7/v2psBjl0KOYcWOOLfGjp+CfbA==",
     "AzureWebJobsSecretStorageKeyVaultUri": "CfDJ8ET3eUSlJThPqwxRFSQ3SLRJsoSM4DnREnIDxrtEU6wVCDPTrPjtb0bcaQzYSQ44/Lp6XnVGqXTEiXjoUEYGQe/gIwggUfi1txAphqaCNPnR7ju6W/SyGiguuz+sGD4lFL3oO3Xw3zxZnK3W8AzV/E7SD2t6GDuFS+MoUcrSLJ+2",
-    "AzureWebJobsSecretStorageKeyVaultClientId": "CfDJ8ET3eUSlJThPqwxRFSQ3SLQokgwOGzmRIgXRzcJ7YUrRNQmc1zmmdyEIar32j96zLFz8LOu5YDSAPTQsbQS7tY/8qlhZ0ihpJWsoKUkMgsfbDcDtI2fj7s0Td86NyoiRqjSnFxgsFFOBsC/qU+wstf3DfBm5m4yVM95F7pcsQWJC"
+    "AzureWebJobsSecretStorageKeyVaultClientId": "CfDJ8ET3eUSlJThPqwxRFSQ3SLQokgwOGzmRIgXRzcJ7YUrRNQmc1zmmdyEIar32j96zLFz8LOu5YDSAPTQsbQS7tY/8qlhZ0ihpJWsoKUkMgsfbDcDtI2fj7s0Td86NyoiRqjSnFxgsFFOBsC/qU+wstf3DfBm5m4yVM95F7pcsQWJC",
+    "AzureWebJobsDisableHomepage": "CfDJ8ET3eUSlJThPqwxRFSQ3SLQYGfnldG35v9xVAsYUk6OBzQtzBxilTwHMh/c54dZ3wwmkA2KmQ61063xJDa65SO1MLcJTCzg5lho+xTFwzZlgIUHj4J1/bST5B9XBxTc6Fg=="
   },
   "ConnectionStrings": {}
 }
