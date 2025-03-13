@@ -15,3 +15,7 @@ curl -X POST --data-binary @input.xml -H "Content-Type: text/xml" https://api.mc
 ```sh
 curl -X POST --data-binary @input.xml -H "Content-Type: text/xml" https://api.mc.chai.org/api/XmlToPdf -o output.pdf
 ```
+
+## Documentation
+
+The endpoints offered by this API are documented via an OpenAPI schema: [`./openapi.yaml`](./openapi.yaml)
