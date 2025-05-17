@@ -354,8 +354,7 @@ public class RendererV01 implements org.chai.mc.Renderer {
                 CommonMarkUtil.markdownToHtml(clinicalTrial),
                 CommonMarkUtil.markdownToHtml(peerReviewedPublications),
                 CommonMarkUtil.markdownToHtml(reimbursementStatus),
-                CommonMarkUtil.markdownToHtml(patientConsentOrDisclosure),
-                CommonMarkUtil.markdownToHtml(stakeholdersConsulted));
+                CommonMarkUtil.markdownToHtml(patientConsentOrDisclosure));
     }
 
     public String renderReferences(final Element bibliography) throws ParseException, IOException {
