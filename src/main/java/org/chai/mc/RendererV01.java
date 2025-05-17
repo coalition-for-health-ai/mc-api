@@ -333,7 +333,6 @@ public class RendererV01 implements org.chai.mc.Renderer {
         final String peerReviewedPublications = XMLUtil.getElementText(resources, "PeerReviewedPublications");
         final String reimbursementStatus = XMLUtil.getElementTextWithDefault(resources, "ReimbursementStatus", "N/A");
         final String patientConsentOrDisclosure = XMLUtil.getElementText(resources, "PatientConsentOrDisclosure");
-        final String stakeholdersConsulted = XMLUtil.getElementText(resources, "StakeholdersConsulted");
         return String.format("""
                 <tr style="background-color: black; color: white">
                     <td colspan="2">
@@ -348,7 +347,6 @@ public class RendererV01 implements org.chai.mc.Renderer {
                             <li><b>Peer Reviewed Publication(s):</b> %s</li>
                             <li><b>Reimbursement Status:</b> %s</li>
                             <li><b>Patient consent or disclosure required or suggested:</b> %s</li>
-                            <li><b>Stakeholders consulted during design of intervention:</b> %s</li>
                         </ul>
                     </td>
                 </tr>
